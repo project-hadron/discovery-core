@@ -2,7 +2,7 @@ import unittest
 import os
 import shutil
 
-from ds_core.components.aistac_commons import DataAnalytics, CoreCommons
+from ds_core.components.core_commons import DataAnalytics, CoreCommons
 from ds_core.properties.property_manager import PropertyManager
 
 

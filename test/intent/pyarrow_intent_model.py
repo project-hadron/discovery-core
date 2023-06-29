@@ -1,7 +1,7 @@
 import inspect
 import threading
 import pyarrow as pa
-from ds_core.components.aistac_commons import CoreCommons
+from ds_core.components.core_commons import CoreCommons
 from ds_core.intent.abstract_intent import AbstractIntentModel
 from ds_core.properties.abstract_properties import AbstractPropertyManager
 
@@ -113,5 +113,4 @@ class PyarrowIntentModel(AbstractIntentModel):
         for c in selection:
             values = data.pop(c)
             data[c] = [str(x) if x is not None else None for x in values]
-        if not inplace:
-            return data
+        return data

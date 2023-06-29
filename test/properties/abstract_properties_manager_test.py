@@ -3,7 +3,7 @@ import shutil
 import unittest
 from pprint import pprint
 
-from ds_core.components.aistac_commons import CoreCommons
+from ds_core.components.core_commons import CoreCommons
 from ds_core.handlers.abstract_handlers import ConnectorContract
 
 from ds_core.properties.abstract_properties import AbstractPropertyManager, AbstractProperty

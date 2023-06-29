@@ -4,7 +4,7 @@ from abc import ABC, abstractmethod
 from datetime import datetime
 from typing import List, Any
 # handlers
-from ds_core.components.aistac_commons import CoreCommons
+from ds_core.components.core_commons import CoreCommons
 from ds_core.properties.property_manager import PropertyManager
 from ds_core.handlers.abstract_handlers import AbstractSourceHandler, AbstractPersistHandler
 from ds_core.handlers.abstract_handlers import HandlerFactory, ConnectorContract

@@ -3,7 +3,7 @@ import platform
 from abc import ABC, abstractmethod
 from typing import Any
 
-from ds_core.components.aistac_commons import CoreCommons
+from ds_core.components.core_commons import CoreCommons
 
 from ds_core.intent.abstract_intent import AbstractIntentModel
 from ds_core.properties.abstract_properties import AbstractPropertyManager
