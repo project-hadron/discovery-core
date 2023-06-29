@@ -3,7 +3,7 @@ import os
 import shutil
 
 from ds_core.handlers.abstract_handlers import ConnectorContract
-from ds_core.intent.python_cleaners_intent import PythonCleanersIntentModel
+from ds_core.intent.python_cleaners_intent import PyarrowCleanersIntentModel
 from ds_core.properties.abstract_properties import AbstractPropertyManager
 from ds_core.properties.property_manager import PropertyManager
 
@@ -26,8 +26,8 @@ class IntentModelTest(unittest.TestCase):
 
     def setUp(self):
         self.connector = ConnectorContract(uri='contracts/config_contract.pkl?sep=.&encoding=Latin1',
-                                           module_name='test.handlers.pyarrow_handlers',
-                                           handler='PythonPersistHandler')
+                                           module_name='ds_core.handlers.pyarrow_handlers',
+                                           handler='PyarrowPersistHandler')
         try:
             os.makedirs('contracts')
         except:
@@ -44,10 +44,10 @@ class IntentModelTest(unittest.TestCase):
 
     def test_runs(self):
         """Basic smoke test"""
-        PythonCleanersIntentModel(property_manager=self.pm)
+        PyarrowCleanersIntentModel(property_manager=self.pm)
 
     def test_run_intent_pipeline(self):
-        model = PythonCleanersIntentModel(property_manager=self.pm)
+        model = PyarrowCleanersIntentModel(property_manager=self.pm)
         canonical = {'A': [1,4,7], 'B': [4,5,9]}
         result = model.run_intent_pipeline(canonical=canonical, inplace=False)
         self.assertDictEqual(canonical, result)
@@ -57,7 +57,7 @@ class IntentModelTest(unittest.TestCase):
         self.assertDictEqual({'a': [1, 4, 7]}, result)
 
     def test_run_intent_pipeline_levels(self):
-        model = PythonCleanersIntentModel(property_manager=self.pm)
+        model = PyarrowCleanersIntentModel(property_manager=self.pm)
         data = {'A': [1,4,7], 'B': [4,5,9]}
         model.to_remove(data=data, headers=['B'], inplace=False, intent_level=0)
         model.auto_clean_header(data=data, case='lower', inplace=False, intent_level=1)

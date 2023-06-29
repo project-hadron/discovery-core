@@ -61,8 +61,8 @@ class PropertyManagerTest(unittest.TestCase):
 
     def test_dump_load_persist(self):
         connector_contract = ConnectorContract(uri='test/properties.parquet',
-                                               module_name='test.handlers.pyarrow_handlers',
-                                               handler='PythonPersistHandler', file_type='parquet')
+                                               module_name='ds_core.handlers.pyarrow_handlers',
+                                               handler='PyarrowPersistHandler', file_type='parquet')
         handler = HandlerFactory.instantiate(connector_contract)
         pm = PropertyManager()
         file = 'test/properties.parquet'
@@ -79,8 +79,8 @@ class PropertyManagerTest(unittest.TestCase):
 
     def test_dump_load_key(self):
         connector_contract = ConnectorContract(uri='test/properties.parquet',
-                                               module_name='test.handlers.pyarrow_handlers',
-                                               handler='PythonPersistHandler', file_type='parquet')
+                                               module_name='ds_core.handlers.pyarrow_handlers',
+                                               handler='PyarrowPersistHandler', file_type='parquet')
         handler = HandlerFactory.instantiate(connector_contract)
         pm = PropertyManager()
         pm.set('transition.task1', {'keyA1': 'valueA1'})
@@ -107,8 +107,8 @@ class PropertyManagerTest(unittest.TestCase):
 
     def test_raise(self):
         connector_contract = ConnectorContract(uri='test/properties.parquet',
-                                               module_name='test.handlers.pyarrow_handlers',
-                                               handler='PythonPersistHandler', file_type='parquet')
+                                               module_name='ds_core.handlers.pyarrow_handlers',
+                                               handler='PyarrowPersistHandler', file_type='parquet')
         handler = HandlerFactory.instantiate(connector_contract)
         pm = PropertyManager()
         pm.dump(handler)
@@ -118,8 +118,8 @@ class PropertyManagerTest(unittest.TestCase):
 
     def test_dump_load_overwrite(self):
         connector_contract = ConnectorContract(uri='test/properties.json',
-                                               module_name='test.handlers.pyarrow_handlers',
-                                               handler='PythonPersistHandler', file_type='json')
+                                               module_name='ds_core.handlers.pyarrow_handlers',
+                                               handler='PyarrowPersistHandler', file_type='json')
         handler = HandlerFactory.instantiate(connector_contract)
         pm = PropertyManager()
         file = 'test/properties.json'

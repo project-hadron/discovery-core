@@ -65,8 +65,8 @@ class AbstractComponent(ABC):
     # TEMPLATE_PERSIST = 'template_persist'
     # default connectors module and handlers
     DEFAULT_MODULE = 'ds_core.handlers.python_handlers'
-    DEFAULT_SOURCE_HANDLER = 'PythonSourceHandler'
-    DEFAULT_PERSIST_HANDLER = 'PythonPersistHandler'
+    DEFAULT_SOURCE_HANDLER = 'PyarrowSourceHandler'
+    DEFAULT_PERSIST_HANDLER = 'PyarrowPersistHandler'
 
     def __init__(self, property_manager: Any, intent_model: Any, default_save: bool=None, reset_templates: bool=None,
                  template_path: str = None, template_module: str = None, template_source_handler: str = None,

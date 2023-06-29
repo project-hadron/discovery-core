@@ -21,7 +21,7 @@ class ConnectorContractTest(unittest.TestCase):
     def test_connector_environ(self):
         os.environ['HADRON_TESTER'] = 'work/tester'
         os.environ['MODULE_ROOT'] = 'tests'
-        os.environ['HANDLER'] = 'PythonPersistHandler'
+        os.environ['HANDLER'] = 'PyarrowPersistHandler'
         os.environ['VERSION'] = '1.00'
         os.environ['ENCODING'] = 'Latin1'
         os.environ['USERNAME'] = 'dtester'
@@ -39,7 +39,7 @@ class ConnectorContractTest(unittest.TestCase):
         # parsed
         self.assertEqual(sc.uri, 's3://dtester:pa22w0rd@aistac:8080/work/tester/uri?encoding=Latin1&ignore_errors=True')
         self.assertEqual(sc.module_name, 'tests.handlers.python_handlers')
-        self.assertEqual(sc.handler, 'PythonPersistHandler')
+        self.assertEqual(sc.handler, 'PyarrowPersistHandler')
         self.assertEqual(sc.version, 'v1.00')
         self.assertDictEqual(sc.kwargs, {'kwarg1': 'work/tester'})
         self.assertEqual(sc.address, 's3://dtester:pa22w0rd@aistac:8080/work/tester/uri')

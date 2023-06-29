@@ -29,8 +29,8 @@ class AbstractPropertiesManagerTest(unittest.TestCase):
 
     def setUp(self):
         self.connector = ConnectorContract(uri='works/config_contract.pkl?sep=.&encoding=Latin1',
-                                           module_name='test.handlers.pyarrow_handlers',
-                                           handler='PythonPersistHandler', name='darryl', password='mypass')
+                                           module_name='ds_core.handlers.pyarrow_handlers',
+                                           handler='PyarrowPersistHandler', name='darryl', password='mypass')
         try:
             os.makedirs('works')
         except:
@@ -145,8 +145,8 @@ class AbstractPropertiesManagerTest(unittest.TestCase):
         pm.set_property_connector(self.connector)
         result = pm.get_connector_contract(pm.CONNECTOR_PM_CONTRACT)
         self.assertEqual('works/config_contract.pkl?sep=.&encoding=Latin1', result.raw_uri)
-        self.assertEqual('test.handlers.pyarrow_handlers', result.raw_module_name)
-        self.assertEqual('PythonPersistHandler', result.raw_handler)
+        self.assertEqual('ds_core.handlers.pyarrow_handlers', result.raw_module_name)
+        self.assertEqual('PyarrowPersistHandler', result.raw_handler)
         self.assertDictEqual({'name': 'darryl', 'password': 'mypass'}, result.raw_kwargs)
         self.assertEqual('0.0.1', result.version)
 
@@ -193,7 +193,7 @@ class AbstractPropertiesManagerTest(unittest.TestCase):
         dpm = ControlPropertyManager('test_abstract_properties')
         dpm.set_connector_contract(connector_name=connector_name, connector_contract=self.connector)
         handler = dpm.get_connector_handler(connector_name)
-        self.assertEqual("<class 'test.handlers.pyarrow_handlers.PythonPersistHandler'>", str(type(handler)))
+        self.assertEqual("<class 'ds_core.handlers.pyarrow_handlers.PyarrowPersistHandler'>", str(type(handler)))
 
     def test_set_connector_contract(self):
         connector_name = 'raw_source'

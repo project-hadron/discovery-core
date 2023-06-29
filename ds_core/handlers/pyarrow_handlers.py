@@ -6,7 +6,7 @@ from pyarrow import csv
 from pyarrow import json
 
 from ds_core.handlers.abstract_handlers import AbstractSourceHandler, AbstractPersistHandler
-from ds_core.handlers.abstract_handlers import ConnectorContract
+from ds_core.handlers.abstract_handlers import ConnectorContract, HandlerFactory
 
 __author__ = 'Darryl Oatridge'
 
@@ -17,10 +17,12 @@ class PyarrowSourceHandler(AbstractSourceHandler):
     def __init__(self, connector_contract: ConnectorContract):
         """ initialise the Handler passing the connector_contract dictionary """
         super().__init__(connector_contract)
+        self._file_state = 0
+        self._changed_flag = True
 
     def supported_types(self) -> list:
         """ The source types supported with this module"""
-        return ['parquet', 'feather', 'csv', 'json']
+        return ['parquet', 'feather', 'csv', 'json', 'xml', 'pickle', 'xlsx']
 
     def load_canonical(self, **kwargs) -> pa.Table:
         """ returns the canonical dataset based on the connector contract. """
@@ -53,13 +55,51 @@ class PyarrowSourceHandler(AbstractSourceHandler):
         raise LookupError('The source format {} is not currently supported'.format(file_type))
 
     def exists(self) -> bool:
-        return True
+        """ Returns True is the file exists """
+        if not isinstance(self.connector_contract, ConnectorContract):
+            raise ValueError("The Pandas Connector Contract has not been set")
+        _cc = self.connector_contract
+        if _cc.schema.startswith('http') or _cc.schema.startswith('git'):
+            module_name = 'requests'
+            _address = _cc.address.replace("git://", "https://")
+            if HandlerFactory.check_module(module_name=module_name):
+                module = HandlerFactory.get_module(module_name=module_name)
+                return module.get(_address).status_code == 200
+            raise ModuleNotFoundError(f"The required module {module_name} has not been installed. "
+                                      f"Please pip install the appropriate package in order to complete this action")
+        if os.path.exists(_cc.address):
+            return True
+        return False
 
     def has_changed(self) -> bool:
-        return True
+        """ returns the status of the change_flag indicating if the file has changed since last load or reset"""
+        if not self.exists():
+            return False
+        # maintain the change flag
+        _cc = self.connector_contract
+        if _cc.schema.startswith('http') or _cc.schema.startswith('git'):
+            if not isinstance(self.connector_contract, ConnectorContract):
+                raise ValueError("The Pandas Connector Contract has not been set")
+            module_name = 'requests'
+            _address = _cc.address.replace("git://", "https://")
+            if HandlerFactory.check_module(module_name=module_name):
+                module = HandlerFactory.get_module(module_name=module_name)
+                state = module.head(_address).headers.get('last-modified', 0)
+            else:
+                raise ModuleNotFoundError(f"The required module {module_name} has not been installed. Please pip "
+                                          f"install the appropriate package in order to complete this action")
+        else:
+            state = os.stat(_cc.address).st_mtime_ns
+        if state != self._file_state:
+            self._changed_flag = True
+            self._file_state = state
+        return self._changed_flag
 
     def reset_changed(self, changed: bool = False):
-        pass
+        """ manual reset to say the file has been seen. This is automatically called if the file is loaded"""
+        changed = changed if isinstance(changed, bool) else False
+        self._changed_flag = changed
+
 
 class PyarrowPersistHandler(PyarrowSourceHandler, AbstractPersistHandler):
     """ PyArrow read/write Persist Handler. """
@@ -111,4 +151,12 @@ class PyarrowPersistHandler(PyarrowSourceHandler, AbstractPersistHandler):
         raise LookupError('The file format {} is not currently supported for write'.format(file_type))
 
     def remove_canonical(self) -> bool:
+        if not isinstance(self.connector_contract, ConnectorContract):
+            return False
+        _cc = self.connector_contract
+        if self.connector_contract.schema.startswith('http'):
+            raise NotImplemented("Remove Canonical does not support {} schema based URIs".format(_cc.schema))
+        if os.path.exists(_cc.address):
+            os.remove(_cc.address)
+            return True
         return False
