@@ -4,7 +4,6 @@ import unittest
 from pprint import pprint
 
 from ds_core.handlers.abstract_handlers import ConnectorContract, HandlerFactory
-
 from ds_core.properties.property_manager import PropertyManager
 
 
@@ -117,12 +116,12 @@ class PropertyManagerTest(unittest.TestCase):
         self.assertTrue("The key 'one.two.three' could not " in str(context.exception))
 
     def test_dump_load_overwrite(self):
-        connector_contract = ConnectorContract(uri='test/properties.json',
+        connector_contract = ConnectorContract(uri='test/properties.parquet',
                                                module_name='ds_core.handlers.pyarrow_handlers',
-                                               handler='PyarrowPersistHandler', file_type='json')
+                                               handler='PyarrowPersistHandler', file_type='parquet')
         handler = HandlerFactory.instantiate(connector_contract)
         pm = PropertyManager()
-        file = 'test/properties.json'
+        file = 'test/properties.parquet'
         pm.set('KeyA', 'ValueA')
         self.assertEqual('ValueA', pm.get('KeyA'))
         # dump the file then add a new item and see if it doesn't get overwritten

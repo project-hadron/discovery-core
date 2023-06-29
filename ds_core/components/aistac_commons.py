@@ -5,11 +5,12 @@ import math
 import re
 from datetime import datetime
 from typing import Any
-
+import pyarrow as pa
+import pyarrow.compute as pc
 __author__ = 'Darryl Oatridge'
 
 
-class AistacCommons(object):
+class CoreCommons(object):
     """ common methods """
 
     @staticmethod
@@ -214,85 +215,45 @@ class AistacCommons(object):
         return [round((n_range * ((x - seq_min) / seq_range)) + a, precision) for x in seq]
 
     @staticmethod
-    def filter_headers(data: dict, headers: [str, list]=None, drop: bool=None, dtype: [str, list]=None,
-                       exclude: bool=None, regex: [str, list]=None, re_ignore_case: bool=None) -> list:
+    def filter_headers(data: pa.Table, headers: [str, list]=None, drop: bool=None, regex: [str, list]=None) -> list:
         """ returns a list of headers based on the filter criteria
 
         :param data: the Canonical data to get the column headers from
         :param headers: a list of headers to drop or filter on type
         :param drop: to drop or not drop the headers
-        :param dtype: the column types to include or exclude. Default None else int, float, bool, object, 'number'
-        :param exclude: to exclude or include the dtypes. Default is False
         :param regex: a regular expression to search the headers
-        :param re_ignore_case: true if the regex should ignore case. Default is False
         :return: a filtered list of headers
 
         :raise: TypeError if any of the types are not as expected
         """
         if drop is None or not isinstance(drop, bool):
             drop = False
-        if exclude is None or not isinstance(exclude, bool):
-            exclude = False
-        if re_ignore_case is None or not isinstance(re_ignore_case, bool):
-            re_ignore_case = False
 
-        if not isinstance(data, dict):
-            raise TypeError("The first function attribute must be a dictionary")
-        _headers = AistacCommons.list_formatter(headers)
-        dtype = AistacCommons.list_formatter(dtype)
-        regex = AistacCommons.list_formatter(regex)
-        _obj_cols = list(data.keys())
-        _rtn_cols = set()
-        unmodified = True
+        if not isinstance(data, pa.Table):
+            raise TypeError("The first function attribute must be a pa.Table")
+        _headers = CoreCommons.list_formatter(headers)
+        regex = '|'.join(CoreCommons.list_formatter(regex))
+        _obj_cols = data.column_names
 
         if _headers is not None and _headers:
-            _rtn_cols = set(_obj_cols).difference(_headers) if drop else set(_obj_cols).intersection(_headers)
-            unmodified = False
-
+            result = pc.is_in(data.column_names, pa.array(_headers))
+            return pa.array(data.column_names).filter(result)
         if regex is not None and regex:
-            re_ignore_case = re.I if re_ignore_case else 0
-            _regex_cols = list()
-            for exp in regex:
-                _regex_cols += [s for s in _obj_cols if re.search(exp, s, re_ignore_case)]
-            _rtn_cols = _rtn_cols.union(set(_regex_cols))
-            unmodified = False
-
-        if unmodified:
-            _rtn_cols = set(_obj_cols)
-
-        if dtype is not None and dtype:
-            type_header = []
-            for col in _rtn_cols:
-                if any((isinstance(x, tuple(dtype)) for x in col)):
-                    type_header.append(col)
-            _rtn_cols = set(_rtn_cols).difference(type_header) if exclude else set(_rtn_cols).intersection(type_header)
-
-        return [c for c in _rtn_cols]
+            result = pc.extract_regex(data.column_names, regex).is_valid()
+            return pa.array(data.column_names).filter(result)
 
     @staticmethod
-    def filter_columns(data: dict, headers=None, drop=False, dtype=None, exclude=False, regex=None,
-                       re_ignore_case=None, inplace=False) -> dict:
+    def filter_columns(data: pa.Table, headers=None, drop: bool=None, regex: [str, list]=None) -> pa.Table:
         """ Returns a subset of columns based on the filter criteria
 
         :param data: the Canonical data to get the column headers from
         :param headers: a list of headers to drop or filter on type
         :param drop: to drop or not drop the headers
-        :param dtype: the column types to include or exclude. Default None else int, float, bool, object, 'number'
-        :param exclude: to exclude or include the dtypes
         :param regex: a regular expression to search the headers
-        :param re_ignore_case: true if the regex should ignore case. Default is False
-        :param inplace: if the passed pandas.DataFrame should be used for a deep copy
         :return:
         """
-        if not inplace:
-            data = data.copy()
-        obj_cols = AistacCommons.filter_headers(data=data, headers=headers, drop=drop, dtype=dtype, exclude=exclude,
-                                                regex=regex, re_ignore_case=re_ignore_case)
-        for col in data.keys():
-            if col not in obj_cols:
-                data.pop(col)
-        return data
-
+        result = CoreCommons.filter_headers(data=data, headers=headers, drop=drop, regex=regex)
+        return data.drop_columns(CoreCommons.list_diff(data.column_names, result))
 
 class AnalyticsSection(object):
     """A section  subset of the analytics"""

@@ -4,7 +4,7 @@ from abc import ABC, abstractmethod
 from datetime import datetime
 from typing import List, Any
 # handlers
-from ds_core.components.aistac_commons import AistacCommons
+from ds_core.components.aistac_commons import CoreCommons
 from ds_core.properties.property_manager import PropertyManager
 from ds_core.handlers.abstract_handlers import AbstractSourceHandler, AbstractPersistHandler
 from ds_core.handlers.abstract_handlers import HandlerFactory, ConnectorContract
@@ -902,11 +902,11 @@ class AbstractPropertyManager(ABC):
         """ returns the file pattern for the property manager
 
         :param project: (optional) an alternative project string that replaces 'hadron'
-        :param file_type: (optional) an alternative file extension to the default 'json' format
+        :param file_type: (optional) an alternative file extension to the default 'parquet' format
         :return:
         """
         project = project if isinstance(project, str) else 'hadron'
-        file_type = file_type if isinstance(file_type, str) else 'json'
+        file_type = file_type if isinstance(file_type, str) else 'parquet'
         return f"{project}_pm_{self.manager_name()}_{self.task_name}.{file_type}"
 
     def file_pattern(self, name: str, project: str=None, path: [str, list]=None, prefix: str=None, suffix: str=None,
@@ -1262,4 +1262,4 @@ class AbstractPropertyManager(ABC):
     @staticmethod
     def list_formatter(value) -> list:
         """ Useful utility method to convert any type of str, list, tuple or pd.Series into a list"""
-        return AistacCommons.list_formatter(value=value)
+        return CoreCommons.list_formatter(value=value)

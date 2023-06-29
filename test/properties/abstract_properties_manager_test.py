@@ -3,7 +3,7 @@ import shutil
 import unittest
 from pprint import pprint
 
-from ds_core.components.aistac_commons import AistacCommons
+from ds_core.components.aistac_commons import CoreCommons
 from ds_core.handlers.abstract_handlers import ConnectorContract
 
 from ds_core.properties.abstract_properties import AbstractPropertyManager, AbstractProperty
@@ -28,7 +28,7 @@ class AbstractPropertiesManagerTest(unittest.TestCase):
     """Test: """
 
     def setUp(self):
-        self.connector = ConnectorContract(uri='works/config_contract.pkl?sep=.&encoding=Latin1',
+        self.connector = ConnectorContract(uri='works/config_contract.parquet?sep=.&encoding=Latin1',
                                            module_name='ds_core.handlers.pyarrow_handlers',
                                            handler='PyarrowPersistHandler', name='darryl', password='mypass')
         try:
@@ -83,7 +83,7 @@ class AbstractPropertiesManagerTest(unittest.TestCase):
         self.assertFalse(os.path.exists('works/config_contract.p'))
         pm.set_version('test_version')
         pm.persist_properties()
-        self.assertTrue(os.path.exists('works/config_contract.pkl'))
+        self.assertTrue(os.path.exists('works/config_contract.parquet'))
         self.assertEqual(['pm_control_test_abstract_properties'], pm.connector_contract_list)
         self.assertEqual('test_version', pm.version)
         pm.reset_all()
@@ -144,7 +144,7 @@ class AbstractPropertiesManagerTest(unittest.TestCase):
         pm = ControlPropertyManager('test_abstract_properties')
         pm.set_property_connector(self.connector)
         result = pm.get_connector_contract(pm.CONNECTOR_PM_CONTRACT)
-        self.assertEqual('works/config_contract.pkl?sep=.&encoding=Latin1', result.raw_uri)
+        self.assertEqual('works/config_contract.parquet?sep=.&encoding=Latin1', result.raw_uri)
         self.assertEqual('ds_core.handlers.pyarrow_handlers', result.raw_module_name)
         self.assertEqual('PyarrowPersistHandler', result.raw_handler)
         self.assertDictEqual({'name': 'darryl', 'password': 'mypass'}, result.raw_kwargs)
@@ -296,11 +296,11 @@ class AbstractPropertiesManagerTest(unittest.TestCase):
         result = manager.get_knowledge(catalog='overview')
         self.assertEqual({}, result)
         result = manager.get_knowledge(catalog='notes')
-        self.assertEqual(['age', 'comment'], AistacCommons.list_formatter(result.keys()))
+        self.assertEqual(['age', 'comment'], CoreCommons.list_formatter(result.keys()))
         result = manager.get_knowledge(catalog='notes', as_list=True)
         self.assertEqual(['age', 'comment'], result)
         result = manager.get_knowledge(catalog='notes', label='comment')
-        self.assertEqual(['general note', 'and another'], AistacCommons.list_formatter(result.values()))
+        self.assertEqual(['general note', 'and another'], CoreCommons.list_formatter(result.values()))
         result = manager.get_knowledge(catalog='notes', label='comment', as_list=True)
         self.assertEqual(['general note', 'and another'], result)
 
@@ -438,10 +438,10 @@ class AbstractPropertiesManagerTest(unittest.TestCase):
         # remove by cleaner
         dpm.set_intent({'clean_01': {'headers': 'h1'}}, order=0)
         dpm.set_intent({'clean_01': {'headers': 'h4'}}, order=1)
-        self.assertEqual(['0', '1'],  AistacCommons.list_formatter(dpm.get_intent(level='A').keys()))
+        self.assertEqual(['0', '1'], CoreCommons.list_formatter(dpm.get_intent(level='A').keys()))
         dpm.remove_intent({'clean_01': {'headers': 'h4'}})
         self.assertTrue(dpm.has_intent(level='A'))
-        self.assertEqual(['0'],  AistacCommons.list_formatter(dpm.get_intent(level='A').keys()))
+        self.assertEqual(['0'], CoreCommons.list_formatter(dpm.get_intent(level='A').keys()))
         # remove all
         dpm.set_intent({'clean_01': {'headers': 'h1'}})
         dpm.set_intent({'clean_02': {'headers': 'h4'}})
@@ -453,18 +453,18 @@ class AbstractPropertiesManagerTest(unittest.TestCase):
         dpm.set_intent({'clean_02': {'headers': 'h4'}}, level='B')
         dpm.remove_intent(level='C')
         dpm.remove_intent(level='A')
-        self.assertEqual(['B'],  AistacCommons.list_formatter(dpm.get_intent().keys()))
+        self.assertEqual(['B'], CoreCommons.list_formatter(dpm.get_intent().keys()))
         dpm.remove_intent(level='B')
         self.assertEqual({}, dpm.get_intent())
         # remove all intent in a level
         dpm.set_intent({'clean_01': {'headers': 'h1'}}, level='A', order=-1)
         dpm.set_intent({'clean_01': {'headers': 'h2'}}, level='A', order=-1)
         dpm.set_intent({'clean_01': {'headers': 'h4'}}, level='B')
-        self.assertEqual(['0', '1'],  AistacCommons.list_formatter(dpm.get_intent(level='A').keys()))
-        self.assertEqual(['0'],  AistacCommons.list_formatter(dpm.get_intent(level='B').keys()))
+        self.assertEqual(['0', '1'], CoreCommons.list_formatter(dpm.get_intent(level='A').keys()))
+        self.assertEqual(['0'], CoreCommons.list_formatter(dpm.get_intent(level='B').keys()))
         dpm.remove_intent(intent_param='clean_01', level='A')
-        self.assertEqual([],  AistacCommons.list_formatter(dpm.get_intent(level='A').keys()))
-        self.assertEqual(['0'],  AistacCommons.list_formatter(dpm.get_intent(level='B').keys()))
+        self.assertEqual([], CoreCommons.list_formatter(dpm.get_intent(level='A').keys()))
+        self.assertEqual(['0'], CoreCommons.list_formatter(dpm.get_intent(level='B').keys()))
 
     def test_get_intent(self):
         dpm = ControlPropertyManager('test_abstract_properties')
@@ -475,12 +475,12 @@ class AbstractPropertiesManagerTest(unittest.TestCase):
         result = dpm.get_intent(level='A', order=1, intent='to_str')
         self.assertDictEqual({'to_str' : {'headers': ['five', 'six']}}, result)
         result = dpm.get_intent(level='A')
-        self.assertEqual(['0', '1'], AistacCommons.list_formatter(result.keys()))
+        self.assertEqual(['0', '1'], CoreCommons.list_formatter(result.keys()))
         result = dpm.get_intent(level='B')
-        self.assertEqual(['0'], AistacCommons.list_formatter(result.keys()))
-        self.assertEqual(['clean_03'], AistacCommons.list_formatter(result.get('0').keys()))
+        self.assertEqual(['0'], CoreCommons.list_formatter(result.keys()))
+        self.assertEqual(['clean_03'], CoreCommons.list_formatter(result.get('0').keys()))
         result = dpm.get_intent()
-        self.assertEqual(['A', 'B'], AistacCommons.list_formatter(result.keys()))
+        self.assertEqual(['A', 'B'], CoreCommons.list_formatter(result.keys()))
 
     def test_set_intent_description(self):
         pm = ControlPropertyManager('task')
@@ -552,8 +552,8 @@ class AbstractPropertiesManagerTest(unittest.TestCase):
         pm = ControlPropertyManager('task')
         result = pm.file_pattern(name='source')
         self.assertEqual('hadron_control_task_source.parquet', result)
-        result = pm.file_pattern(name='source', file_type='json')
-        self.assertEqual('hadron_control_task_source.json', result)
+        result = pm.file_pattern(name='source', file_type='parquet')
+        self.assertEqual('hadron_control_task_source.parquet', result)
         result = pm.file_pattern(name='source', stamped="hours")
         self.assertEqual('hadron_control_task_source${TO_HOURS}.parquet', result)
         result = pm.file_pattern(name='source', versioned=True, stamped="minutes")
@@ -623,7 +623,7 @@ class AbstractPropertiesManagerTest(unittest.TestCase):
     def test_report_connectors_align(self):
         pm = ControlPropertyManager('task')
         connector_name = 'connector'
-        uri = "s3://bucket/path/hadron_control_task_connector.parquet?name=fred&value=45"
+        uri = "https://bucket/path/hadron_control_task_connector.parquet?name=fred&value=45"
         cc = ConnectorContract(uri=uri, module_name='module.package', handler='Handler')
         pm.set_connector_contract(connector_name='source', connector_contract=cc)
         pm.set_connector_contract(connector_name='persist', connector_contract=cc, aligned=True)

@@ -44,7 +44,7 @@ class ControlComponent(AbstractComponent):
                  template_source_handler: str=None, template_persist_handler: str=None, align_connectors: bool=None,
                  default_save_intent: bool=None, default_intent_level: bool=None, order_next_available: bool=None,
                  default_replace_intent: bool=None, has_contract: bool=None):
-        pm_file_type = pm_file_type if isinstance(pm_file_type, str) else 'json'
+        pm_file_type = pm_file_type if isinstance(pm_file_type, str) else 'parquet'
         pm_module = pm_module if isinstance(pm_module, str) else 'ds_core.handlers.pyarrow_handlers'
         pm_handler = pm_handler if isinstance(pm_handler, str) else 'PyarrowPersistHandler'
         _pm = ControlPropertyManager(task_name=task_name, creator=creator)
@@ -68,7 +68,7 @@ class AbstractComponentTest(unittest.TestCase):
             if var in os.environ:
                 del os.environ[var]
         os.environ['HADRON_PM_PATH'] = os.path.join(os.environ['PWD'], 'work')
-        os.environ['HADRON_PM_TYPE'] = 'json'
+        os.environ['HADRON_PM_TYPE'] = 'parquet'
         os.environ['HADRON_USERNAME'] = 'TestUser'
         os.environ['HADRON_DEFAULT_PATH'] = os.path.join(os.environ['PWD'], 'work')
         PropertyManager._remove_all()
@@ -214,16 +214,16 @@ class AbstractComponentTest(unittest.TestCase):
         self.assertCountEqual(control, report.get('handler'))
         control = ['ds_core.handlers.pyarrow_handlers']*3
         self.assertCountEqual(control, report.get('module_name'))
-        self.assertIn(os.environ.get('HADRON_PM_PATH') + '/hadron_pm_control_task.json', report.get('uri'))
+        self.assertIn(os.environ.get('HADRON_PM_PATH') + '/hadron_pm_control_task.parquet', report.get('uri'))
 
     def test_PM_from_env(self):
         os.environ['HADRON_PM_PATH'] = "work/test/contracts?A=24&B=fred"
-        os.environ['HADRON_PM_TYPE'] = 'json'
+        os.environ['HADRON_PM_TYPE'] = 'parquet'
         os.environ['HADRON_PM_MODULE'] = 'ds_core.handlers.pyarrow_handlers'
         os.environ['HADRON_PM_HANDLER'] = 'PyarrowPersistHandler'
         instance = ControlComponent.from_env('task', has_contract=False, encoding='Latin1')
         result = instance.pm.get_connector_contract(instance.pm.CONNECTOR_PM_CONTRACT)
-        self.assertEqual('work/test/contracts/hadron_pm_control_task.json', result.uri)
+        self.assertEqual('work/test/contracts/hadron_pm_control_task.parquet', result.uri)
         self.assertEqual('PyarrowPersistHandler', result.handler)
         self.assertEqual('ds_core.handlers.pyarrow_handlers', result.module_name)
         self.assertDictEqual({'A': '24', 'B': 'fred', 'encoding': 'Latin1'}, result.kwargs)
@@ -262,7 +262,7 @@ class AbstractComponentTest(unittest.TestCase):
 
     def test_from_environ(self):
         os.environ['HADRON_PM_PATH'] = "work/${BUCKET}/${TASK}"
-        os.environ['HADRON_PM_TYPE'] = 'json'
+        os.environ['HADRON_PM_TYPE'] = 'parquet'
         os.environ['HADRON_PM_MODULE'] = '${MODULE}'
         os.environ['HADRON_PM_HANDLER'] = '${HANDLER}'
         os.environ['BUCKET'] = 'contracts'
@@ -357,7 +357,7 @@ class AbstractComponentTest(unittest.TestCase):
                    'HADRON_PM_MODULE': 'default',
                    'HADRON_PM_PATH': f"{os.environ.get('PWD')}/work",
                    'HADRON_PM_REPO': 'not used',
-                   'HADRON_PM_TYPE': 'json',
+                   'HADRON_PM_TYPE': 'parquet',
                    'HADRON_CREATOR': 'TestUser'}
         self.maxDiff = None
         self.assertDictEqual(control, result)
@@ -417,17 +417,17 @@ class AbstractComponentTest(unittest.TestCase):
         result = manager.set_report_persist([manager.REPORT_SCHEMA, manager.REPORT_INTENT, manager.REPORT_NOTES])
         self.assertEqual(['primary_schema', 'intent', 'notes'], result)
         result = manager.pm.get_connector_contract(manager.REPORT_SCHEMA).uri
-        self.assertEqual(f"{os.environ['HADRON_DEFAULT_PATH']}/hadron_control_task_primary_schema_0.0.1.json", result)
+        self.assertEqual(f"{os.environ['HADRON_DEFAULT_PATH']}/hadron_control_task_primary_schema_0.0.1.parquet", result)
         self.assertEqual(6, len(manager.pm.connector_contract_list))
         manager.pm.reset_connector_contracts()
         manager.reset_template_connectors()
         manager.set_report_persist(manager.REPORT_SCHEMA)
         result = manager.pm.get_connector_contract(manager.REPORT_SCHEMA).uri
-        self.assertEqual(f"{os.environ['HADRON_DEFAULT_PATH']}/hadron_control_task_primary_schema_0.0.1.json", result)
+        self.assertEqual(f"{os.environ['HADRON_DEFAULT_PATH']}/hadron_control_task_primary_schema_0.0.1.parquet", result)
         self.assertEqual(4, len(manager.pm.connector_contract_list))
         manager.set_report_persist([{'report': manager.REPORT_SCHEMA}])
         result = manager.pm.get_connector_contract(manager.REPORT_SCHEMA).uri
-        self.assertEqual(f"{os.environ['HADRON_DEFAULT_PATH']}/hadron_control_task_primary_schema_0.0.1.json", result)
+        self.assertEqual(f"{os.environ['HADRON_DEFAULT_PATH']}/hadron_control_task_primary_schema_0.0.1.parquet", result)
         manager.set_report_persist(reports=[{'report': manager.REPORT_SCHEMA, 'file_type': 'csv'}])
         result = manager.pm.get_connector_contract(manager.REPORT_SCHEMA).uri
         self.assertEqual(f"{os.environ['HADRON_DEFAULT_PATH']}/hadron_control_task_primary_schema_0.0.1.csv", result)
