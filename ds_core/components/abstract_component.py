@@ -3,12 +3,12 @@ import platform
 from abc import ABC, abstractmethod
 from typing import Any
 
-from aistac.components.aistac_commons import AistacCommons
+from ds_core.components.aistac_commons import AistacCommons
 
-from aistac.intent.abstract_intent import AbstractIntentModel
-from aistac.properties.abstract_properties import AbstractPropertyManager
-from aistac.handlers.abstract_handlers import ConnectorContract, HandlerFactory
-from aistac.handlers.abstract_handlers import AbstractPersistHandler, AbstractSourceHandler
+from ds_core.intent.abstract_intent import AbstractIntentModel
+from ds_core.properties.abstract_properties import AbstractPropertyManager
+from ds_core.handlers.abstract_handlers import ConnectorContract, HandlerFactory
+from ds_core.handlers.abstract_handlers import AbstractPersistHandler, AbstractSourceHandler
 
 __author__ = 'Darryl Oatridge'
 
@@ -64,7 +64,7 @@ class AbstractComponent(ABC):
     # TEMPLATE_SOURCE = 'template_source'
     # TEMPLATE_PERSIST = 'template_persist'
     # default connectors module and handlers
-    DEFAULT_MODULE = 'aistac.handlers.python_handlers'
+    DEFAULT_MODULE = 'ds_core.handlers.python_handlers'
     DEFAULT_SOURCE_HANDLER = 'PythonSourceHandler'
     DEFAULT_PERSIST_HANDLER = 'PythonPersistHandler'
 

@@ -4,10 +4,10 @@ from abc import ABC, abstractmethod
 from datetime import datetime
 from typing import List, Any
 # handlers
-from aistac.components.aistac_commons import AistacCommons
-from aistac.properties.property_manager import PropertyManager
-from aistac.handlers.abstract_handlers import AbstractSourceHandler, AbstractPersistHandler
-from aistac.handlers.abstract_handlers import HandlerFactory, ConnectorContract
+from ds_core.components.aistac_commons import AistacCommons
+from ds_core.properties.property_manager import PropertyManager
+from ds_core.handlers.abstract_handlers import AbstractSourceHandler, AbstractPersistHandler
+from ds_core.handlers.abstract_handlers import HandlerFactory, ConnectorContract
 
 __author__ = 'Darryl Oatridge'
 
@@ -918,7 +918,7 @@ class AbstractPropertyManager(ABC):
         :param path: (optional) a file path that precedes the prefix and file pattern. uses os.path.join so takes a list
         :param prefix: (optional) a prefix to put at the front of the file pattern to replace the default
         :param suffix: (optional) a suffix to put at the end of the file pattern and extension
-        :param file_type: (optional) an alternative file extension to the default 'pickle' format
+        :param file_type: (optional) an alternative file extension to the default 'parquet' format
         :param versioned: (optional) if the component version should be included as part of the pattern
         :param stamped: (optional) A string of the timestamp options ['days', 'hours', 'minutes', 'seconds', 'ns']
         :return: a pattern unique to this component task connector
@@ -926,7 +926,7 @@ class AbstractPropertyManager(ABC):
         project = project.lower() if isinstance(project, str) else 'hadron'
         prefix = prefix if isinstance(prefix, str) else f"{project}_{self.manager_name()}_{self.task_name}_"
         suffix = suffix if isinstance(suffix, str) else ''
-        file_type = file_type if isinstance(file_type, str) else 'pickle'
+        file_type = file_type if isinstance(file_type, str) else 'parquet'
 
         _pattern = f"{prefix}{name}"
         if isinstance(path, (str, list)):

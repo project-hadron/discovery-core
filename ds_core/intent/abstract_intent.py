@@ -2,7 +2,7 @@ from abc import ABC, abstractmethod
 from typing import Any
 from inspect import signature
 
-from aistac.properties.abstract_properties import AbstractPropertyManager
+from ds_core.properties.abstract_properties import AbstractPropertyManager
 
 __author__ = 'Darryl Oatridge'
 

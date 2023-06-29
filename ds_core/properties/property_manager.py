@@ -6,7 +6,7 @@ from typing import Any
 import pyarrow as pa
 import ds_core
 from ds_core.handlers.abstract_handlers import AbstractPersistHandler
-from aistac.properties.decorator_patterns import singleton
+from ds_core.properties.decorator_patterns import singleton
 
 
 

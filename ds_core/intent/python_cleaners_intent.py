@@ -2,9 +2,9 @@ import inspect
 import threading
 from datetime import datetime
 
-from aistac.components.aistac_commons import AistacCommons
-from aistac.intent.abstract_intent import AbstractIntentModel
-from aistac.properties.abstract_properties import AbstractPropertyManager
+from ds_core.components.aistac_commons import AistacCommons
+from ds_core.intent.abstract_intent import AbstractIntentModel
+from ds_core.properties.abstract_properties import AbstractPropertyManager
 
 __author__ = 'Darryl Oatridge'
 
