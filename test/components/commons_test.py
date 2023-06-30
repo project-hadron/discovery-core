@@ -1,7 +1,7 @@
 import unittest
 import os
 import shutil
-
+import pyarrow as pa
 from ds_core.components.core_commons import DataAnalytics, CoreCommons
 from ds_core.properties.property_manager import PropertyManager
 
@@ -23,6 +23,21 @@ class CommonsTest(unittest.TestCase):
             shutil.rmtree('work')
         except:
             pass
+
+    def test_append_table(self):
+        t1 = pa.Table.from_pydict({'A': [1,2], 'B': [1,3], 'C': [2,4]})
+        t2 = pa.Table.from_pydict({'X': [4,5], 'Y': [6,7]})
+        result = CoreCommons.append_table(t1, t2)
+        self.assertEqual((2, 3),t1.shape)
+        self.assertEqual(['A', 'B', 'C'],t1.column_names)
+        self.assertEqual((2, 2),t2.shape)
+        self.assertEqual(['X', 'Y'],t2.column_names)
+        self.assertEqual((2, 5),result.shape)
+        self.assertEqual(['A', 'B', 'C', 'X', 'Y'], result.column_names)
+        t3 = pa.Table.from_pydict({'X': [4, 5, 6], 'Y': [6, 7, 8]})
+        with self.assertRaises(ValueError) as context:
+            result = CoreCommons.append_table(t1, t3)
+        self.assertTrue("The tables passed are not of equal row size. The first has '2' rows and the second has '3' rows" in str(context.exception))
 
     def test_list_formatter(self):
         sample = {'A': [1,2], 'B': [1,2], 'C': [1,2]}

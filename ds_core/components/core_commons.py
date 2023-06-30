@@ -255,6 +255,16 @@ class CoreCommons(object):
         result = CoreCommons.filter_headers(data=data, headers=headers, drop=drop, regex=regex)
         return data.drop_columns(CoreCommons.list_diff(data.column_names, result))
 
+    @staticmethod
+    def append_table(t1: pa.Table, t2: pa.Table):
+        """ appends all the columns in t2 to t1 """
+        if t1.shape[0] != t2.shape[0]:
+            raise ValueError(f"The tables passed are not of equal row size. "
+                             f"The first has '{t1.shape[0]}' rows and the second has '{t2.shape[0]}' rows")
+        for c in t2.column_names:
+            t1 = t1.append_column(c, t2.column(c))
+        return t1
+
 class AnalyticsSection(object):
     """A section  subset of the analytics"""
 
