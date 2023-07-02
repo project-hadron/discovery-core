@@ -34,10 +34,16 @@ class CommonsTest(unittest.TestCase):
         self.assertEqual(['X', 'Y'],t2.column_names)
         self.assertEqual((2, 5),result.shape)
         self.assertEqual(['A', 'B', 'C', 'X', 'Y'], result.column_names)
+        result = CoreCommons.append_table(None, t2)
+        self.assertEqual((2, 2),result.shape)
+        self.assertEqual(['X', 'Y'],result.column_names)
         t3 = pa.Table.from_pydict({'X': [4, 5, 6], 'Y': [6, 7, 8]})
         with self.assertRaises(ValueError) as context:
             result = CoreCommons.append_table(t1, t3)
         self.assertTrue("The tables passed are not of equal row size. The first has '2' rows and the second has '3' rows" in str(context.exception))
+        with self.assertRaises(ValueError) as context:
+            result = CoreCommons.append_table(t1, None)
+        self.assertTrue("As a minimum, the second value passed must be a PyArrow Table" in str(context.exception))
 
     def test_list_formatter(self):
         sample = {'A': [1,2], 'B': [1,2], 'C': [1,2]}

@@ -258,6 +258,10 @@ class CoreCommons(object):
     @staticmethod
     def append_table(t1: pa.Table, t2: pa.Table):
         """ appends all the columns in t2 to t1 """
+        if not isinstance(t2, pa.Table):
+            raise ValueError("As a minimum, the second value passed must be a PyArrow Table")
+        if not isinstance(t1, pa.Table):
+            return t2
         if t1.shape[0] != t2.shape[0]:
             raise ValueError(f"The tables passed are not of equal row size. "
                              f"The first has '{t1.shape[0]}' rows and the second has '{t2.shape[0]}' rows")
