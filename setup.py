@@ -33,11 +33,11 @@ def find_version(*file_paths):
 
 
 setup(
-    name='discovert-core',
+    name='discovery-core',
     version=find_version('ds_core', '__init__.py'),
     description='Augmented Intent Single Task Adaptive Components',
     long_description=read('README.rst'),
-    url='http://github.com/gigas64/aistac-foundation',
+    url='http://github.com/gigas64/discovery-core',
     author='Gigas64',
     author_email='gigas64@aistac.com',
     classifiers=[
