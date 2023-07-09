@@ -256,7 +256,7 @@ class CoreCommons(object):
         return data.drop_columns(CoreCommons.list_diff(data.column_names, result))
 
     @staticmethod
-    def append_table(t1: pa.Table, t2: pa.Table):
+    def table_append(t1: pa.Table, t2: pa.Table):
         """ appends all the columns in t2 to t1 """
         if not isinstance(t2, pa.Table):
             raise ValueError("As a minimum, the second value passed must be a PyArrow Table")
@@ -268,6 +268,27 @@ class CoreCommons(object):
         for c in t2.column_names:
             t1 = t1.append_column(c, t2.column(c))
         return t1
+
+    @staticmethod
+    def table_flatten(t :pa.Table):
+        """ flattens a table of lists and struct data types """
+        working = True
+
+        while working:
+            working = False
+            for idx in range(len(t.column_names)):
+                c = t.column_names[idx]
+                record = t.column(c).combine_chunks()
+                if pa.types.is_list(record.type):
+                    for i in range(pc.min(pc.list_value_length(record)).as_py()):
+                        t = t.append_column(f'{c}_{i}', pc.list_element(t.column(c), i).combine_chunks())
+                    t = t.drop_columns(c)
+                    working = True
+                if pa.types.is_struct(record.type):
+                    t = t.flatten()
+                    working = True
+        return t
+
 
 class AnalyticsSection(object):
     """A section  subset of the analytics"""

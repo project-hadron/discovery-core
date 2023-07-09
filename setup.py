@@ -39,7 +39,7 @@ setup(
     long_description=read('README.rst'),
     url='http://github.com/gigas64/discovery-core',
     author='Gigas64',
-    author_email='gigas64@aistac.com',
+    author_email='gigas64@opengrass.net',
     classifiers=[
         'Development Status :: 5 - Production/Stable',
         'License :: OSI Approved :: BSD License',

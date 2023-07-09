@@ -24,26 +24,48 @@ class CommonsTest(unittest.TestCase):
         except:
             pass
 
-    def test_append_table(self):
+    def test_table_append(self):
         t1 = pa.Table.from_pydict({'A': [1,2], 'B': [1,3], 'C': [2,4]})
         t2 = pa.Table.from_pydict({'X': [4,5], 'Y': [6,7]})
-        result = CoreCommons.append_table(t1, t2)
+        result = CoreCommons.table_append(t1, t2)
         self.assertEqual((2, 3),t1.shape)
         self.assertEqual(['A', 'B', 'C'],t1.column_names)
         self.assertEqual((2, 2),t2.shape)
         self.assertEqual(['X', 'Y'],t2.column_names)
         self.assertEqual((2, 5),result.shape)
         self.assertEqual(['A', 'B', 'C', 'X', 'Y'], result.column_names)
-        result = CoreCommons.append_table(None, t2)
+        result = CoreCommons.table_append(None, t2)
         self.assertEqual((2, 2),result.shape)
         self.assertEqual(['X', 'Y'],result.column_names)
         t3 = pa.Table.from_pydict({'X': [4, 5, 6], 'Y': [6, 7, 8]})
         with self.assertRaises(ValueError) as context:
-            result = CoreCommons.append_table(t1, t3)
+            result = CoreCommons.table_append(t1, t3)
         self.assertTrue("The tables passed are not of equal row size. The first has '2' rows and the second has '3' rows" in str(context.exception))
         with self.assertRaises(ValueError) as context:
-            result = CoreCommons.append_table(t1, None)
+            result = CoreCommons.table_append(t1, None)
         self.assertTrue("As a minimum, the second value passed must be a PyArrow Table" in str(context.exception))
+
+    def test_table_flatten(self):
+        document = [
+            {"_id": "PI1832341",
+             "interactionDate": {"startDateTime": "2023-01-02 04:49:06.955000",
+                                 "endDateTime": "2023-01-02 04:50:35.130000"},
+             "relatedParty": [{"_id": "C5089669",
+                               "role": "Customer",
+                               "engagedParty": {"referredType": "Individual"}},
+                              {"_id": "dclmappuser1",
+                               "role": "CSRAgent"}],
+             "productId": ["PR716796"],
+             }
+        ]
+        tbl = pa.Table.from_pylist(document)
+        result = CoreCommons.table_flatten(tbl)
+        control = ['_id',
+                   'interactionDate.endDateTime', 'interactionDate.startDateTime',
+                   'relatedParty_0._id', 'relatedParty_0.engagedParty.referredType', 'relatedParty_0.role',
+                   'relatedParty_1._id', 'relatedParty_1.engagedParty.referredType', 'relatedParty_1.role',
+                   'productId_0']
+        self.assertEqual(control, result.column_names)
 
     def test_list_formatter(self):
         sample = {'A': [1,2], 'B': [1,2], 'C': [1,2]}
