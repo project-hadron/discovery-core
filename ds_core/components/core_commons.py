@@ -7,8 +7,7 @@ from datetime import datetime
 from typing import Any
 import pyarrow as pa
 import pyarrow.compute as pc
-__author__ = 'Darryl Oatridge'
-
+from pyarrow.lib import ArrowInvalid, ArrowTypeError, ArrowNotImplementedError
 
 class CoreCommons(object):
     """ common methods """
@@ -288,6 +287,34 @@ class CoreCommons(object):
                     t = t.flatten()
                     working = True
         return t
+
+    @staticmethod
+    def column_cast(a: pa.Array, ty: pa.DataType) -> pa.Array:
+        """ attempt to cast a pyarrow array to the given type """
+        try:
+            return a.cast(ty)
+        except (ArrowInvalid, ArrowTypeError, ArrowNotImplementedError):
+            return a
+
+    @staticmethod
+    def table_cast(t: pa.Table, cat_max: int=None):
+        """ attempt to cast a pyarrow table columns to the given type """
+        cat_max = cat_max if isinstance(cat_max, int) else 40
+        rtn_tbl = None
+        for n in t.column_names:
+            c = t.combine_chunks().column(n)
+            if pa.types.is_string(c.type):
+                c = CoreCommons.column_cast(c, pa.timestamp('ns'))
+            if pa.types.is_floating(c.type):
+                c = CoreCommons.column_cast(c, pa.int64())
+            if pa.types.is_integer(c.type) and c.drop_null().unique().sort().equals(pa.array([0, 1])):
+                c = CoreCommons.column_cast(c, pa.bool_())
+            if pa.types.is_string(c.type) and pc.count_distinct(c.drop_null()).equals(pa.scalar(2)):
+                c = CoreCommons.column_cast(c, pa.bool_())
+            if pa.types.is_string(c.type) and 1 <= pc.count_distinct(c.drop_null()).as_py() <= cat_max:
+                c = c.dictionary_encode()
+            rtn_tbl = CoreCommons.table_append(rtn_tbl, pa.table([c], names=[n]))
+        return rtn_tbl
 
 
 class AnalyticsSection(object):

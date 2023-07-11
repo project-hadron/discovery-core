@@ -67,6 +67,44 @@ class CommonsTest(unittest.TestCase):
                    'productId_0']
         self.assertEqual(control, result.column_names)
 
+    def test_array_cast(self):
+        num = pa.array([1.0, 12.0, 5.0, None], pa.float64())
+        date = pa.array(["2023-01-02 04:49:06", "2023-01-02 04:57:12", None, "2023-01-02 05:23:50"], pa.string())
+        text = pa.array(["Blue", "Green", None, 'Blue'], pa.string())
+        bool1 = pa.array([1, 0, 1, None], pa.int64())
+        bool2 = pa.array(['true', 'true', None, 'false'], pa.string())
+        bool3 = pa.array([None, 'no', 'yes', 'yes'], pa.string())
+        # ensure it doesn't fall over
+        for c in [num, date, text, bool1, bool2, bool3]:
+            for ty in [pa.string(),pa.int64(),pa.float64(),pa.timestamp('ns'),pa.bool_(),pa.null(),]:
+                _ = CoreCommons.column_cast(c, ty)
+        self.assertEqual(pa.int64(), CoreCommons.column_cast(num, pa.int64()).type)
+        self.assertEqual(pa.timestamp('ns'), CoreCommons.column_cast(date, pa.timestamp('ns')).type)
+        self.assertEqual(pa.string(), CoreCommons.column_cast(text, pa.string()).type)
+        self.assertEqual(pa.bool_(), CoreCommons.column_cast(bool1, pa.bool_()).type)
+        self.assertEqual(pa.bool_(), CoreCommons.column_cast(bool2, pa.bool_()).type)
+        self.assertEqual(pa.string(), CoreCommons.column_cast(bool3, pa.bool_()).type)
+
+    def test_table_cast(self):
+        num = pa.array([1.0, 12.0, 5.0, None], pa.float64())
+        date = pa.array(["2023-01-02 04:49:06", "2023-01-02 04:57:12", None, "2023-01-02 05:23:50"], pa.string())
+        text = pa.array(["Blue", "Green", None, 'Red'], pa.string())
+        bool1 = pa.array([1, 0, 1, None], pa.int64())
+        bool2 = pa.array(['true', 'true', None, 'false'], pa.string())
+        bool3 = pa.array([None, 'M', 'F', 'M'], pa.string())
+        tbl = pa.table([num, date, text, bool1, bool2, bool3], names=['num', 'date', 'text', 'bool1', 'bool2', 'bool3'])
+        result = CoreCommons.table_cast(tbl).combine_chunks()
+        control = pa.schema([('num', pa.int64()),
+                             ('date', pa.timestamp('ns')),
+                             ('text', pa.dictionary(pa.int32(), pa.string())),
+                             ('bool1', pa.bool_()),
+                             ('bool2', pa.bool_()),
+                             ('bool3', pa.dictionary(pa.int32(), pa.string())),
+                             ])
+        self.assertEqual(control, result.schema)
+
+
+
     def test_list_formatter(self):
         sample = {'A': [1,2], 'B': [1,2], 'C': [1,2]}
         result = CoreCommons.list_formatter(sample)
