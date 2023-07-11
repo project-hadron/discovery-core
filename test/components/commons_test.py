@@ -102,6 +102,15 @@ class CommonsTest(unittest.TestCase):
                              ('bool3', pa.dictionary(pa.int32(), pa.string())),
                              ])
         self.assertEqual(control, result.schema)
+        result = CoreCommons.table_cast(tbl, cat_max=2).combine_chunks()
+        control = pa.schema([('num', pa.int64()),
+                             ('date', pa.timestamp('ns')),
+                             ('text', pa.string()),
+                             ('bool1', pa.bool_()),
+                             ('bool2', pa.bool_()),
+                             ('bool3', pa.dictionary(pa.int32(), pa.string())),
+                             ])
+        self.assertEqual(control, result.schema)
 
 
 
