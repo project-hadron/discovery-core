@@ -62,9 +62,9 @@ class CommonsTest(unittest.TestCase):
         result = CoreCommons.table_flatten(tbl)
         control = ['_id',
                    'interactionDate.endDateTime', 'interactionDate.startDateTime',
-                   'relatedParty_0._id', 'relatedParty_0.engagedParty.referredType', 'relatedParty_0.role',
-                   'relatedParty_1._id', 'relatedParty_1.engagedParty.referredType', 'relatedParty_1.role',
-                   'productId_0']
+                   'relatedParty.0._id', 'relatedParty.0.engagedParty.referredType', 'relatedParty.0.role',
+                   'relatedParty.1._id', 'relatedParty.1.engagedParty.referredType', 'relatedParty.1.role',
+                   'productId.0']
         self.assertEqual(control, result.column_names)
 
     def test_array_cast(self):

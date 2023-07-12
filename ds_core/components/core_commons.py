@@ -282,7 +282,7 @@ class CoreCommons(object):
                 record = t.column(c).combine_chunks()
                 if pa.types.is_list(record.type):
                     for i in range(pc.min(pc.list_value_length(record)).as_py()):
-                        t = t.append_column(f'{c}_{i}', pc.list_element(t.column(c), i).combine_chunks())
+                        t = t.append_column(f'{c}.{i}', pc.list_element(t.column(c), i).combine_chunks())
                     t = t.drop_columns(c)
                     working = True
                 if pa.types.is_struct(record.type):
