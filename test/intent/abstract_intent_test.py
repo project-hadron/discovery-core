@@ -6,6 +6,8 @@ from ds_core.handlers.abstract_handlers import ConnectorContract
 from ds_core.properties.abstract_properties import AbstractPropertyManager
 from ds_core.properties.property_manager import PropertyManager
 
+from test.intent.pyarrow_intent_model import PyarrowIntentModel
+
 
 class ControlPropertyManager(AbstractPropertyManager):
 
@@ -24,7 +26,7 @@ class ControlPropertyManager(AbstractPropertyManager):
 class IntentModelTest(unittest.TestCase):
 
     def setUp(self):
-        self.connector = ConnectorContract(uri='contracts/config_contract.pkl?sep=.&encoding=Latin1',
+        self.connector = ConnectorContract(uri='contracts/config_contract.pq?sep=.&encoding=Latin1',
                                            module_name='ds_core.handlers.pyarrow_handlers',
                                            handler='PyarrowPersistHandler')
         try:
@@ -43,20 +45,19 @@ class IntentModelTest(unittest.TestCase):
 
     def test_runs(self):
         """Basic smoke test"""
-        PyarrowCleanersIntentModel(property_manager=self.pm)
+        PyarrowIntentModel(property_manager=self.pm)
 
     def test_run_intent_pipeline(self):
-        model = PyarrowCleanersIntentModel(property_manager=self.pm)
+        model = PyarrowIntentModel(property_manager=self.pm)
         canonical = {'A': [1,4,7], 'B': [4,5,9]}
         result = model.run_intent_pipeline(canonical=canonical, inplace=False)
         self.assertDictEqual(canonical, result)
-        model.to_remove(data=canonical, headers=['B'], inplace=True)
-        model.auto_clean_header(data=canonical, case='lower', inplace=True)
-        result = model.run_intent_pipeline(canonical=canonical, inplace=False)
+        model.to_str_type(data=canonical, headers=['B'])
+        result = model.run_intent_pipeline(canonical=canonical)
         self.assertDictEqual({'a': [1, 4, 7]}, result)
 
     def test_run_intent_pipeline_levels(self):
-        model = PyarrowCleanersIntentModel(property_manager=self.pm)
+        model = PyarrowIntentModel(property_manager=self.pm)
         data = {'A': [1,4,7], 'B': [4,5,9]}
         model.to_remove(data=data, headers=['B'], inplace=False, intent_level=0)
         model.auto_clean_header(data=data, case='lower', inplace=False, intent_level=1)

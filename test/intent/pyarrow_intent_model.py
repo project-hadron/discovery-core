@@ -74,23 +74,19 @@ class PyarrowIntentModel(AbstractIntentModel):
         if not inplace:
             return canonical
 
-    def to_str_type(self, data: pa.Table, headers: [str, list]=None, drop: bool=False, dtype: [str, list]=None,
-                    exclude: bool=False, regex: [str, list]=None, re_ignore_case: bool=True,
-                    nulls_list: [bool, list]=None, save_intent: bool=None, intent_level: [int, str]=None,
-                    intent_order: int=None, replace_intent: bool=None, remove_duplicates: bool=None) -> pa.Table:
+    def to_remove(self, data: pa.Table, headers: [str, list]=None, drop: bool=False, d_type: [str, list]=None,
+                  exclude: bool=False, regex: [str, list]=None, re_ignore_case: bool=True, save_intent: bool=None,
+                  intent_level: [int, str]=None, intent_order: int=None, replace_intent: bool=None,
+                  remove_duplicates: bool=None) -> pa.Table:
         """ converts columns to object type
 
         :param data: the Canonical data to get the column headers from
         :param headers: a list of headers to drop or filter on type
         :param drop: to drop or not drop the headers
-        :param dtype: the column types to include or excluse. Default None else int, float, bool, object, 'number'
+        :param d_type: the column types to include or exclude. Default None else int, float, bool, object, 'number'
         :param exclude: to exclude or include the dtypes
-        :param regex: a regiar expression to seach the headers
+        :param regex: a regular expression to search the headers
         :param re_ignore_case: true if the regex should ignore case. Default is False
-        :param nulls_list: can be boolean or a list:
-                    if boolean and True then null_list equals ['NaN', 'nan', 'null', '', 'None']
-                    if list then this is considered potential null values.
-        :param inplace: if the passed Canonical, should be used or a deep copy
         :param save_intent (optional) if the intent contract should be saved to the property manager
         :param intent_level: (optional) the level name that groups intent by a reference name
         :param intent_order: (optional) the order in which each intent should run.
@@ -107,10 +103,6 @@ class PyarrowIntentModel(AbstractIntentModel):
         self._set_intend_signature(self._intent_builder(method=inspect.currentframe().f_code.co_name, params=locals()),
                                    intent_level=intent_level, intent_order=intent_order, replace_intent=replace_intent,
                                    remove_duplicates=remove_duplicates, save_intent=save_intent)
+        selection = CoreCommons.filter_headers(data, headers=headers, drop=drop, regex=regex)
 
-        selection = CoreCommons.filter_headers(data=data, headers=headers, drop=drop, d_type=dtype, exclude=exclude,
-                                               regex=regex, re_ignore_case=re_ignore_case)
-        for c in selection:
-            values = data.pop(c)
-            data[c] = [str(x) if x is not None else None for x in values]
         return data

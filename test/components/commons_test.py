@@ -87,7 +87,6 @@ class CommonsTest(unittest.TestCase):
 
     def test_table_cast(self):
         num = pa.array([1.0, 12.0, 5.0, None], pa.float64())
-
         date = pa.array(["2023-01-02 04:49:06", "2023-01-02 04:57:12", None, "2023-01-02 05:23:50"], pa.string())
         value = pa.array([None, '1.5', '3.2', '2.0'], pa.string())
         text = pa.array(["Blue", "Green", None, 'Red'], pa.string())
@@ -117,7 +116,35 @@ class CommonsTest(unittest.TestCase):
                              ])
         self.assertEqual(control, result.schema)
 
+    def test_filter_headers(self):
+        num = pa.array([1.0, 12.0, 5.0, None], pa.float64())
+        date = pa.array(["2023-01-02 04:49:06", "2023-01-02 04:57:12", None, "2023-01-02 05:23:50"], pa.string())
+        value = pa.array([None, '1.5', '3.2', '2.0'], pa.string())
+        text = pa.array(["Blue", "Green", None, 'Red'], pa.string())
+        bool1 = pa.array([1, 0, 1, None], pa.int64())
+        bool2 = pa.array(['true', 'true', None, 'false'], pa.string())
+        cat = pa.array([None, 'M', 'F', 'M'], pa.string())
+        tbl = pa.table([num, value, date, text, bool1, bool2, cat],
+                       names=['num', 'value', 'date', 'text', 'bool1', 'bool2', 'cat'])
+        result = CoreCommons.filter_headers(tbl)
+        self.assertEqual(tbl.column_names, result)
+        result = CoreCommons.filter_headers(tbl, headers=['num', 'value', 'text'])
+        self.assertCountEqual(['num', 'value', 'text'], result)
+        result = CoreCommons.filter_headers(tbl, regex=['t', 'value'])
+        self.assertCountEqual(['value', 'date', 'text', 'cat'], result)
+        result = CoreCommons.filter_headers(tbl, regex=['t', 'value'], drop=True)
+        self.assertCountEqual(['bool1', 'bool2', 'num'], result)
+        result = CoreCommons.filter_headers(tbl, headers=['value', 'text', 'bool1'], regex='e')
+        self.assertCountEqual(['value', 'text'], result)
 
+    def test_filter_columns(self):
+        num = pa.array([1.0, 12.0, 5.0, None], pa.float64())
+        date = pa.array(["2023-01-02 04:49:06", "2023-01-02 04:57:12", None, "2023-01-02 05:23:50"], pa.string())
+        value = pa.array([None, '1.5', '3.2', '2.0'], pa.string())
+        text = pa.array(["Blue", "Green", None, 'Red'], pa.string())
+        tbl = pa.table([num, value, date, text], names=['num', 'value', 'date', 'text'])
+        result = CoreCommons.filter_columns(tbl, headers=['num', 'date'])
+        self.assertCountEqual(['num', 'date'], result.column_names)
 
     def test_list_formatter(self):
         sample = {'A': [1,2], 'B': [1,2], 'C': [1,2]}

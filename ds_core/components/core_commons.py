@@ -214,32 +214,35 @@ class CoreCommons(object):
         return [round((n_range * ((x - seq_min) / seq_range)) + a, precision) for x in seq]
 
     @staticmethod
-    def filter_headers(data: pa.Table, headers: [str, list]=None, drop: bool=None, regex: [str, list]=None) -> list:
+    def filter_headers(data: pa.Table, headers: [str, list]=None, d_type: pa.DataType=None, drop: bool=None,
+                       regex: [str, list]=None) -> list:
         """ returns a list of headers based on the filter criteria
 
         :param data: the Canonical data to get the column headers from
         :param headers: a list of headers to drop or filter on type
-        :param drop: to drop or not drop the headers
+        :param d_type: a li
+        :param drop: to drop or not drop the selection
         :param regex: a regular expression to search the headers
         :return: a filtered list of headers
 
         :raise: TypeError if any of the types are not as expected
         """
-        if drop is None or not isinstance(drop, bool):
-            drop = False
-
         if not isinstance(data, pa.Table):
             raise TypeError("The first function attribute must be a pa.Table")
-        _headers = CoreCommons.list_formatter(headers)
+        drop = drop if isinstance(drop, bool) else False
+        headers = CoreCommons.list_formatter(headers)
         regex = '|'.join(CoreCommons.list_formatter(regex))
-        _obj_cols = data.column_names
 
-        if _headers is not None and _headers:
-            result = pc.is_in(data.column_names, pa.array(_headers))
-            return pa.array(data.column_names).filter(result)
+        rtn_list = data.column_names
+        if headers is not None and headers:
+            _ = pc.is_in(rtn_list, pa.array(headers))
+            rtn_list = pa.array(rtn_list).filter(_).to_pylist()
         if regex is not None and regex:
-            result = pc.extract_regex(data.column_names, regex).is_valid()
-            return pa.array(data.column_names).filter(result)
+            _ = pc.extract_regex(rtn_list, regex).is_valid()
+            rtn_list = pa.array(rtn_list).filter(_).to_pylist()
+        if drop:
+            return CoreCommons.list_diff(data.column_names, rtn_list)
+        return rtn_list
 
     @staticmethod
     def filter_columns(data: pa.Table, headers=None, drop: bool=None, regex: [str, list]=None) -> pa.Table:
@@ -251,8 +254,7 @@ class CoreCommons(object):
         :param regex: a regular expression to search the headers
         :return:
         """
-        result = CoreCommons.filter_headers(data=data, headers=headers, drop=drop, regex=regex)
-        return data.drop_columns(CoreCommons.list_diff(data.column_names, result))
+        return data.select(CoreCommons.filter_headers(data=data, headers=headers, drop=drop, regex=regex))
 
     @staticmethod
     def table_append(t1: pa.Table, t2: pa.Table):
