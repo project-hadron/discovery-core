@@ -305,6 +305,8 @@ class CoreCommons(object):
             c = t.combine_chunks().column(n)
             if pa.types.is_string(c.type):
                 c = CoreCommons.column_cast(c, pa.timestamp('ns'))
+            if pa.types.is_string(c.type):
+                c = CoreCommons.column_cast(c, pa.float64())
             if pa.types.is_floating(c.type):
                 c = CoreCommons.column_cast(c, pa.int64())
             if pa.types.is_integer(c.type) and c.drop_null().unique().sort().equals(pa.array([0, 1])):

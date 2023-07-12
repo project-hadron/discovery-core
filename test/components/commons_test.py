@@ -87,14 +87,18 @@ class CommonsTest(unittest.TestCase):
 
     def test_table_cast(self):
         num = pa.array([1.0, 12.0, 5.0, None], pa.float64())
+
         date = pa.array(["2023-01-02 04:49:06", "2023-01-02 04:57:12", None, "2023-01-02 05:23:50"], pa.string())
+        value = pa.array([None, '1.5', '3.2', '2.0'], pa.string())
         text = pa.array(["Blue", "Green", None, 'Red'], pa.string())
         bool1 = pa.array([1, 0, 1, None], pa.int64())
         bool2 = pa.array(['true', 'true', None, 'false'], pa.string())
         bool3 = pa.array([None, 'M', 'F', 'M'], pa.string())
-        tbl = pa.table([num, date, text, bool1, bool2, bool3], names=['num', 'date', 'text', 'bool1', 'bool2', 'bool3'])
+        tbl = pa.table([num, value, date, text, bool1, bool2, bool3],
+                       names=['num', 'value', 'date', 'text', 'bool1', 'bool2', 'bool3'])
         result = CoreCommons.table_cast(tbl).combine_chunks()
         control = pa.schema([('num', pa.int64()),
+                             ('value', pa.float64()),
                              ('date', pa.timestamp('ns')),
                              ('text', pa.dictionary(pa.int32(), pa.string())),
                              ('bool1', pa.bool_()),
@@ -104,6 +108,7 @@ class CommonsTest(unittest.TestCase):
         self.assertEqual(control, result.schema)
         result = CoreCommons.table_cast(tbl, cat_max=2).combine_chunks()
         control = pa.schema([('num', pa.int64()),
+                             ('value', pa.float64()),
                              ('date', pa.timestamp('ns')),
                              ('text', pa.string()),
                              ('bool1', pa.bool_()),

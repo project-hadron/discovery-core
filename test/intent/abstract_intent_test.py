@@ -3,7 +3,6 @@ import os
 import shutil
 
 from ds_core.handlers.abstract_handlers import ConnectorContract
-from ds_core.intent.python_cleaners_intent import PyarrowCleanersIntentModel
 from ds_core.properties.abstract_properties import AbstractPropertyManager
 from ds_core.properties.property_manager import PropertyManager
 
