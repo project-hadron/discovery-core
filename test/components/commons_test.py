@@ -67,6 +67,25 @@ class CommonsTest(unittest.TestCase):
                    'productId.0']
         self.assertEqual(control, result.column_names)
 
+    def test_table_nest(self):
+        document = [
+            {"_id": "PI1832341",
+             "interactionDate": {"startDateTime": "2023-01-02 04:49:06.955000",
+                                 "endDateTime": "2023-01-02 04:50:35.130000"},
+             "relatedParty": [{"_id": "C5089669",
+                               "role": "Customer",
+                               "engagedParty": {"referredType": "Individual"}},
+                              {"_id": "dclmappuser1",
+                               "role": "CSRAgent"}],
+             "productId": ["PR716796"],
+             }
+        ]
+        tbl = CoreCommons.table_flatten(pa.Table.from_pylist(document))
+        result = CoreCommons.table_nest(tbl)
+        self.assertCountEqual(['_id', 'interactionDate', 'relatedParty', 'productId'], result[0].keys())
+        self.assertIsInstance(result[0].get('relatedParty'), list)
+        self.assertEqual(len(result[0].get('relatedParty')), 2)
+
     def test_array_cast(self):
         num = pa.array([1.0, 12.0, 5.0, None], pa.float64())
         date = pa.array(["2023-01-02 04:49:06", "2023-01-02 04:57:12", None, "2023-01-02 05:23:50"], pa.string())

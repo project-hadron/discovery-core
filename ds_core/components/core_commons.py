@@ -291,6 +291,44 @@ class CoreCommons(object):
         return t
 
     @staticmethod
+    def table_nest(t: pa.Table) -> list:
+        """ turns a flattened table back to a nested pattern """
+
+        def set_dict(tree, vector, value):
+            key = vector[0]
+            tree[key] = value if len(vector) == 1 else set_dict(tree[key] if key in tree else {}, vector[1:], value)
+            return tree
+
+        def set_list(struct, keys, tree):
+            for key in tuple(struct.keys()):
+                if isinstance(struct.get(key), dict) and len(struct.get(key)) > 0:
+                    keys.append(key)
+                    set_list(struct.get(key), keys, tree)
+                if str(key).isnumeric():
+                    snippet = list([struct.get(key, {})])
+                    if snippet[0] == {}:
+                        continue
+                    branch = tree
+                    for k in keys[:-1]:
+                        branch = branch.get(k)
+                    snippet = list(struct.values())
+                    struct.clear()
+                    branch[keys[-1]] = snippet
+            if len(keys) > 0:
+                keys.pop()
+            return tree
+
+        rtn_lst = []
+        for idx in range(t.num_rows):
+            rtn_value = {}
+            for n in t.column_names:
+                values = t.column(n).to_pylist()
+                rtn_value = set_dict(rtn_value, n.split('.'), values[idx])
+            rtn_value = set_list(rtn_value, [], rtn_value)
+            rtn_lst.append(rtn_value)
+        return rtn_lst
+
+    @staticmethod
     def column_cast(a: pa.Array, ty: pa.DataType) -> pa.Array:
         """ attempt to cast a pyarrow array to the given type """
         try:
