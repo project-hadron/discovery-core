@@ -294,10 +294,17 @@ class CoreCommons(object):
     def table_nest(t: pa.Table) -> list:
         """ turns a flattened table back to a nested pattern """
 
-        def set_dict(tree, vector, value):
-            key = vector[0]
-            tree[key] = value if len(vector) == 1 else set_dict(tree[key] if key in tree else {}, vector[1:], value)
+        def add_leaf(tree, keys, value):
+            key = keys[0]
+            tree[key] = value if len(keys) == 1 else add_leaf(tree[key] if key in tree else {}, keys[1:], value)
             return tree
+
+        def traverse(d, path=[]):
+            if isinstance(d, dict):
+                for (k, v) in d.items():
+                    yield from traverse(v, [*path, k])
+                else:
+                    yield [*path, d]
 
         def set_list(struct, keys, tree):
             for key in tuple(struct.keys()):
@@ -318,15 +325,37 @@ class CoreCommons(object):
                 keys.pop()
             return tree
 
-        rtn_lst = []
+        document = []
         for idx in range(t.num_rows):
-            rtn_value = {}
-            for n in t.column_names:
-                values = t.column(n).to_pylist()
-                rtn_value = set_dict(rtn_value, n.split('.'), values[idx])
-            rtn_value = set_list(rtn_value, [], rtn_value)
-            rtn_lst.append(rtn_value)
-        return rtn_lst
+            tree = {}
+            for c in t.column_names:
+                names = c.split('.')
+                # set the branch
+                n = names.pop()
+                branch = {n: t.column(c)[idx].as_py()}
+                _ = (next(traverse(branch)))
+                while names:
+                    n = names.pop()
+                    branch = {n: branch}
+                    _ = (next(traverse(branch)))
+                # branch is correct
+                leaf = branch
+                keys = []
+                sub_leaf = tree
+                while leaf:
+                    key = list(leaf.keys())[0]
+                    keys.append(key)
+                    if key not in sub_leaf.keys():
+                        leaf = leaf.get(key)
+                        break
+                    if tree.keys() is None:
+                        break
+                    leaf = leaf.get(key)
+                    sub_leaf = sub_leaf.get(key)
+                tree = add_leaf(tree, keys, leaf)
+            tree = set_list(tree, [], tree)
+            document.append(tree)
+        return document
 
     @staticmethod
     def column_cast(a: pa.Array, ty: pa.DataType) -> pa.Array:
