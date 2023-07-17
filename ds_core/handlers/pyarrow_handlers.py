@@ -1,3 +1,4 @@
+import ast
 import os
 import pyarrow as pa
 import pyarrow.parquet as pq
@@ -47,11 +48,17 @@ class PyarrowSourceHandler(AbstractSourceHandler):
         if file_type.lower() in ['feather']:
             return feather.read_table(address, **load_params)
         # csv
-        if file_type.lower() in ['gzip', 'zip', 'tar', 'csv', 'tsv', 'txt']:
+        if file_type.lower() in ['csv']:
             return csv.read_csv(address, **load_params)
         # json
         if file_type.lower() in ['json']:
             return json.read_json(address, **load_params)
+        # complex nested
+        if file_type.lower() in ['txt']:
+            with open(address) as f:
+                document = ast.literal_eval(f.read())
+            return pa.Table.from_pylist(document)
+
         raise LookupError('The source format {} is not currently supported'.format(file_type))
 
     def exists(self) -> bool:
@@ -144,9 +151,13 @@ class PyarrowPersistHandler(PyarrowSourceHandler, AbstractPersistHandler):
             feather.write_feather(canonical, _address, **write_params)
             return True
         # csv
-        if file_type.lower() in ['csv', 'tsv', 'txt']:
+        if file_type.lower() in ['csv', 'tsv']:
             csv.write_csv(canonical, _address, **write_params)
             return True
+        # complex nested
+        if file_type.lower() in ['txt']:
+            with open(_address, 'w') as f:
+                f.write(str(canonical))
         # not found
         raise LookupError('The file format {} is not currently supported for write'.format(file_type))
 
