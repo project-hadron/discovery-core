@@ -277,8 +277,7 @@ class CoreCommons(object):
 
         while working:
             working = False
-            for idx in range(len(t.column_names)):
-                c = t.column_names[idx]
+            for c in t.column_names:
                 record = t.column(c).combine_chunks()
                 if pa.types.is_list(record.type):
                     for i in range(pc.min(pc.list_value_length(record)).as_py()):
