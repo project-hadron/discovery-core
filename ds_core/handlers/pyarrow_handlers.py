@@ -56,7 +56,7 @@ class PyarrowSourceHandler(AbstractSourceHandler):
         # complex nested
         if file_type.lower() in ['txt']:
             with open(address) as f:
-                document = ast.literal_eval(f.read())
+                document = ast.literal_eval(f.read(address))
             return pa.Table.from_pylist(document)
 
         raise LookupError('The source format {} is not currently supported'.format(file_type))
@@ -158,6 +158,7 @@ class PyarrowPersistHandler(PyarrowSourceHandler, AbstractPersistHandler):
         if file_type.lower() in ['txt']:
             with open(_address, 'w') as f:
                 f.write(str(canonical))
+            return True
         # not found
         raise LookupError('The file format {} is not currently supported for write'.format(file_type))
 
