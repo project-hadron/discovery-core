@@ -274,14 +274,22 @@ class CoreCommons(object):
     def table_flatten(t :pa.Table):
         """ flattens a table of lists and struct data types """
         working = True
-
         while working:
             working = False
             for c in t.column_names:
-                record = t.column(c).combine_chunks()
+                if c not in t.column_names:
+                    continue
+                record = t.column(c)
+                if isinstance(record, pa.ChunkedArray):
+                    record = record.combine_chunks()
                 if pa.types.is_list(record.type):
-                    for i in range(pc.min(pc.list_value_length(record)).as_py()):
-                        t = t.append_column(f'{c}.nest_list_{i}', pc.list_element(t.column(c), i).combine_chunks())
+                    total_max = pc.max(pc.list_value_length(record)).as_py()
+                    total_min = pc.min(pc.list_value_length(record)).as_py()
+                    for i in range(total_max):
+                        if i < total_min:
+                            t = t.append_column(f'{c}.nest_list_{i}', pc.list_element(t.column(c), i).combine_chunks())
+                        else:
+                            continue
                     t = t.drop_columns(c)
                     working = True
                 if pa.types.is_struct(record.type):
