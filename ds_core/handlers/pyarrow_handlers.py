@@ -56,7 +56,7 @@ class PyarrowSourceHandler(AbstractSourceHandler):
         # complex nested
         if file_type.lower() in ['txt']:
             with open(address) as f:
-                document = ast.literal_eval(f.read(address))
+                document = ast.literal_eval(f.read())
             return pa.Table.from_pylist(document)
 
         raise LookupError('The source format {} is not currently supported'.format(file_type))
