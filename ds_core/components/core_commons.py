@@ -152,6 +152,19 @@ class CoreCommons(object):
         return list(set(seq).union(set(other)))
 
     @staticmethod
+    def list_dup(seq: list) -> list:
+        """ Useful utility method to return duplicates"""
+        if not isinstance(seq, list):
+            raise ValueError("The sequence must be of type 'list'")
+        seen = set()
+        # Note: assign seen add to a local variable as local variable are less costly to resolve than dynamic call
+        seen_add = seen.add
+        # adds all elements it doesn't know yet to seen and all other to return
+        seen_twice = set(x for x in seq if x in seen or seen_add(x))
+        # turn the set into a list (as requested)
+        return list(seen_twice)
+
+    @staticmethod
     def list_unique(seq: list) -> list:
         """ Useful utility method to retain the order of a list but removes duplicates"""
         if not isinstance(seq, list):
@@ -274,6 +287,7 @@ class CoreCommons(object):
     def table_flatten(t :pa.Table):
         """ flattens a table of lists and struct data types """
         working = True
+        row_count = t.num_rows
         while working:
             working = False
             for c in t.column_names:
@@ -283,13 +297,10 @@ class CoreCommons(object):
                 if isinstance(record, pa.ChunkedArray):
                     record = record.combine_chunks()
                 if pa.types.is_list(record.type):
+                    record = pc.list_slice(record, 0, row_count, return_fixed_size_list=True)
                     total_max = pc.max(pc.list_value_length(record)).as_py()
-                    total_min = pc.min(pc.list_value_length(record)).as_py()
                     for i in range(total_max):
-                        if i < total_min:
-                            t = t.append_column(f'{c}.nest_list_{i}', pc.list_element(t.column(c), i).combine_chunks())
-                        else:
-                            continue
+                        t = t.append_column(f'{c}.nest_list_{i}', pc.list_element(record, i))
                     t = t.drop_columns(c)
                     working = True
                 if pa.types.is_struct(record.type):
