@@ -297,10 +297,13 @@ class CoreCommons(object):
                 if isinstance(record, pa.ChunkedArray):
                     record = record.combine_chunks()
                 if pa.types.is_list(record.type):
-                    record = pc.list_slice(record, 0, row_count, return_fixed_size_list=True)
                     total_max = pc.max(pc.list_value_length(record)).as_py()
+                    record = pc.list_slice(record, 0, row_count, return_fixed_size_list=True)
                     for i in range(total_max):
-                        t = t.append_column(f'{c}.nest_list_{i}', pc.list_element(record, i))
+                        try:
+                            t = t.append_column(f'{c}.nest_list_{i}', pc.list_element(record, i))
+                        except ArrowInvalid:
+                            break
                     t = t.drop_columns(c)
                     working = True
                 if pa.types.is_struct(record.type):

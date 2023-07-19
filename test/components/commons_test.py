@@ -58,7 +58,7 @@ class CommonsTest(unittest.TestCase):
         tbl = pa.Table.from_pylist(document)
         result = CoreCommons.table_flatten(tbl)
 
-        print(result.shape)
+        print(len(CoreCommons.filter_headers(result, regex='nest_list_')))
 
         control = ['_id', 'gender',
                    'contactMedium.nest_list_0.medium.emailAddress',
