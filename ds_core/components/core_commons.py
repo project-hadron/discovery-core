@@ -298,7 +298,7 @@ class CoreCommons(object):
                     record = record.combine_chunks()
                 if pa.types.is_list(record.type):
                     total_max = pc.max(pc.list_value_length(record)).as_py()
-                    record = pc.list_slice(record, 0, row_count, return_fixed_size_list=True)
+                    record = pc.list_slice(record, 0, total_max, return_fixed_size_list=True)
                     for i in range(total_max):
                         try:
                             t = t.append_column(f'{c}.nest_list_{i}', pc.list_element(record, i))
@@ -309,16 +309,35 @@ class CoreCommons(object):
                 if pa.types.is_struct(record.type):
                     t = t.flatten()
                     working = True
+        # drop columns
+        for n in t.column_names:
+            c = t.column(n)
+            if pa.types.is_boolean(c.type):
+                if not pc.all(c).as_py():
+                    t = t.drop_columns(n)
+            elif len(c.drop_null()) == 0:
+                t = t.drop_columns(n)
         return t
 
     @staticmethod
     def table_nest(t: pa.Table) -> list:
         """ turns a flattened table back to a nested pattern """
 
-        def add_leaf(tree, keys, value):
-            key = keys[0]
-            tree[key] = value if len(keys) == 1 else add_leaf(tree[key] if key in tree else {}, keys[1:], value)
-            return tree
+        def add_leaf(b_tree, b_keys, value):
+            l_key = b_keys[0]
+            try:
+                b_tree[l_key] = value if len(b_keys) == 1 else add_leaf(b_tree[l_key] if l_key in b_tree else {}, b_keys[1:], value)
+            except (AttributeError, KeyError):
+                pass
+            return b_tree
+
+        def del_leaf(b_tree, b_keys):
+            l_key = b_keys[0]
+            try:
+                b_tree.pop(l_key) if len(b_keys) == 1 else del_leaf(b_tree[l_key] if l_key in b_tree else {}, b_keys[1:])
+            except (AttributeError, KeyError):
+                pass
+            return b_tree
 
         def traverse(d, path=[]):
             if isinstance(d, dict):
@@ -327,53 +346,30 @@ class CoreCommons(object):
                 else:
                     yield [*path, d]
 
-        def set_list(struct, keys, tree):
-            for key in tuple(struct.keys()):
-                if isinstance(struct.get(key), dict) and len(struct.get(key)) > 0:
-                    keys.append(key)
-                    set_list(struct.get(key), keys, tree)
-                if str(key).startswith('nest_list_'):
-                    snippet = list([struct.get(key, {})])
-                    if snippet[0] == {}:
-                        continue
-                    branch = tree
-                    for k in keys[:-1]:
-                        branch = branch.get(k)
+        def set_list(struct, l_keys, l_tree):
+            for l_branch in tuple(struct.keys()):
+                if struct.get(l_branch) is None:
+                    continue
+                # loop to the top of the tree and work back
+                if isinstance(struct.get(l_branch), dict) and len(struct.get(l_branch)) > 0:
+                    l_keys.append(l_branch)
+                    set_list(struct.get(l_branch), l_keys, l_tree)
+                    l_keys.pop()
+                # look for the nest list
+                if str(l_branch).startswith('nest_list_'):
                     snippet = list(struct.values())
-                    struct.clear()
-                    branch[keys[-1]] = snippet
-            if len(keys) > 0:
-                keys.pop()
-            return tree
+                    l_tree = add_leaf(l_tree, l_keys, snippet)
+            return l_tree
 
         document = []
         for idx in range(t.num_rows):
             tree = {}
             for c in t.column_names:
                 names = c.split('.')
-                # set the branch
-                n = names.pop()
-                branch = {n: t.column(c)[idx].as_py()}
-                _ = (next(traverse(branch)))
-                while names:
-                    n = names.pop()
-                    branch = {n: branch}
-                    _ = (next(traverse(branch)))
-                # branch is correct
-                leaf = branch
-                keys = []
-                sub_leaf = tree
-                while leaf:
-                    key = list(leaf.keys())[0]
-                    keys.append(key)
-                    if key not in sub_leaf.keys():
-                        leaf = leaf.get(key)
-                        break
-                    if tree.keys() is None:
-                        break
-                    leaf = leaf.get(key)
-                    sub_leaf = sub_leaf.get(key)
-                tree = add_leaf(tree, keys, leaf)
+                value = t.column(c)[idx].as_py()
+                if value is None:
+                    continue
+                tree = add_leaf(tree, names, t.column(c)[idx].as_py())
             tree = set_list(tree, [], tree)
             document.append(tree)
         return document

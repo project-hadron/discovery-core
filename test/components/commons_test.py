@@ -1,6 +1,8 @@
 import unittest
 import os
 import shutil
+from pprint import pprint
+
 import pyarrow as pa
 from ds_core.components.core_commons import DataAnalytics, CoreCommons
 from ds_core.properties.property_manager import PropertyManager
@@ -57,39 +59,29 @@ class CommonsTest(unittest.TestCase):
         ]
         tbl = pa.Table.from_pylist(document)
         result = CoreCommons.table_flatten(tbl)
-
-        print(len(CoreCommons.filter_headers(result, regex='nest_list_')))
-
-        control = ['_id', 'gender',
-                   'contactMedium.nest_list_0.medium.emailAddress',
-                   'contactMedium.nest_list_0.medium.number',
-                   'contactMedium.nest_list_0.medium.type',
-                   'contactMedium.nest_list_0.preferred',
-                   'contactMedium.nest_list_1.medium.emailAddress',
-                   'contactMedium.nest_list_1.medium.number',
-                   'contactMedium.nest_list_1.medium.type',
-                   'contactMedium.nest_list_1.preferred']
-
-        # self.assertEqual(control, result.column_names)
+        control = CoreCommons.filter_headers(result, regex='nest_list_', drop=True)
+        self.assertCountEqual(['middleName', 'gender', '_id', 'givenName', 'familyName'], control)
+        control = len(CoreCommons.filter_headers(result, regex='nest_list_'))
+        self.assertEqual(13, control)
 
     def test_table_nest(self):
         document = [
-            {"_id": "PI1832341",
-             "interactionDate": {"startDateTime": "2023-01-02 04:49:06.955000",
-                                 "endDateTime": "2023-01-02 04:50:35.130000"},
-             "relatedParty": [{"_id": "C5089669",
-                               "role": "Customer",
-                               "engagedParty": {"referredType": "Individual"}},
-                              {"_id": "dclmappuser1",
-                               "role": "CSRAgent"}],
-             "productId": ["PR716796"],
-             }
+            {"_id": "I35138", "contactMedium": [{"medium": {"number": "50070028", "type": "mobile"}, "preferred": True}, {"medium": {"emailAddress": "mail@stc.com.kw", "type": "emailAddress"}, "preferred": True}], "gender": "M", "familyName": "Fouad", "givenName": "Fouad", "middleName": "Fouad"},
+            {"_id": "I35145", "contactMedium": [{"medium": {"emailAddress": "panneer.rajadurai.c@solutions.com.kw", "type": "EmailAddress"}, "preferred": True}, {"medium": {"number": "51658317", "type": "mobile"}, "preferred": True}, {"medium": {"number": "51658317", "type": "whatsapp"}, "preferred": False}, {"medium": {"number": "51658317", "type": "telegram"}, "preferred": False}, {"medium": {"type": "telephone"}, "role": "AlternateNumber"}], "gender": "M", "familyName": "Jay", "givenName": "Bhuvana", "middleName": ""},
+            {"_id": "I35146", "contactMedium": [{"medium": {"emailAddress": "bhuvana.stc21@gmail.com", "type": "EmailAddress"}, "preferred": True}, {"medium": {"type": "mobile"}, "preferred": False}, {"medium": {"type": "whatsapp"}, "preferred": False}, {"medium": {"type": "telegram"}, "preferred": False}], "gender": "F", "familyName": "CORP", "givenName": "TECNOTREE", "middleName": "LTD"},
+            {"_id": "I35178", "contactMedium": [{"medium": {"emailAddress": "m.m.alkhoduri@outlook.com", "type": "emailAddress"}, "preferred": True}, {"medium": {"number": "55850055", "type": "mobile"}, "preferred": True}, {"medium": {"number": "55850055", "type": "whatsapp"}, "preferred": False}, {"medium": {"number": "55850055", "type": "telegram"}, "preferred": False}], "gender": "M", "familyName": "", "givenName": "MohammadalKoduri", "middleName": ""},
+            {"_id": "I35179", "contactMedium": [{"medium": {"emailAddress": "ahb@bremenintl.com", "type": "emailAddress"}, "preferred": True}, {"medium": {"number": "51500014", "type": "mobile"}, "preferred": True}, {"medium": {"number": "51500014", "type": "whatsapp"}, "preferred": False}, {"medium": {"number": "51500014", "type": "telegram"}, "preferred": False}], "gender": "M", "familyName": "", "givenName": "AhmedBakhiet", "middleName": ""},
+            {"_id": "I35180", "contactMedium": [{"medium": {"emailAddress": "test@gmail.com", "type": "emailAddress"}, "preferred": True}], "gender": "M", "familyName": "Admin", "givenName": "FakhrTest", "middleName": ""},
+            {"_id": "I35181", "contactMedium": [], "gender": "M", "familyName": "test", "givenName": "test", "nationality": "", "middleName": ""}
         ]
         tbl = CoreCommons.table_flatten(pa.Table.from_pylist(document))
         result = CoreCommons.table_nest(tbl)
-        self.assertCountEqual(['_id', 'interactionDate', 'relatedParty', 'productId'], result[0].keys())
-        self.assertIsInstance(result[0].get('relatedParty'), list)
-        self.assertEqual(len(result[0].get('relatedParty')), 2)
+        self.assertCountEqual(['_id', 'gender', 'familyName', 'givenName', 'middleName', 'contactMedium'], result[0].keys())
+        self.assertIsInstance(result[0].get('contactMedium'), list)
+        self.assertEqual(len(result[0].get('contactMedium')), 2)
+        self.assertEqual(len(result[1].get('contactMedium')), 5)
+        self.assertEqual(len(result[2].get('contactMedium')), 4)
+        self.assertCountEqual(['_id', 'gender', 'familyName', 'givenName', 'middleName'], result[6].keys())
 
     def test_array_cast(self):
         num = pa.array([1.0, 12.0, 5.0, None], pa.float64())
