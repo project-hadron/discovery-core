@@ -248,8 +248,7 @@ class CoreCommons(object):
 
         rtn_list = data.column_names
         if headers is not None and headers:
-            _ = pc.is_in(rtn_list, pa.array(headers))
-            rtn_list = pa.array(rtn_list).filter(_).to_pylist()
+            rtn_list = CoreCommons.list_intersect(rtn_list, headers)
         if regex is not None and regex:
             _ = pc.extract_regex(rtn_list, regex).is_valid()
             rtn_list = pa.array(rtn_list).filter(_).to_pylist()
