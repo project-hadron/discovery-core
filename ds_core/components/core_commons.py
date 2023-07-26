@@ -297,7 +297,7 @@ class CoreCommons(object):
                     record = record.combine_chunks()
                 if pa.types.is_list(record.type):
                     total_max = pc.max(pc.list_value_length(record)).as_py()
-                    record = pc.list_slice(record, 0, total_max, return_fixed_size_list=True)
+                    record = pc.list_slice(record, start=0, stop=total_max, return_fixed_size_list=True)
                     for i in range(total_max):
                         try:
                             t = t.append_column(f'{c}.nest_list_{i}', pc.list_element(record, i))
