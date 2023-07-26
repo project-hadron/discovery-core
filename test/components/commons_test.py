@@ -49,11 +49,35 @@ class CommonsTest(unittest.TestCase):
         self.assertTrue("As a minimum, the second value passed must be a PyArrow Table" in str(context.exception))
 
     def test_table_flatten_file(self):
+        # Individual
+        with open('../_data/Individual.txt') as f:
+            document = ast.literal_eval(f.read())
+        print("\n Individual")
+        pprint(document[:1])
+        tbl = pa.Table.from_pylist(document)
+        f_tbl = CoreCommons.table_flatten(tbl)
+        result = CoreCommons.table_nest(f_tbl)
+        pprint(result[:1])
+
+        # PartyInteraction
+        with open('../_data/PartyInteraction.txt') as f:
+            document = ast.literal_eval(f.read())
+        print("\n PartyInteraction")
+        pprint(document[:1])
+        tbl = pa.Table.from_pylist(document)
+        f_tbl = CoreCommons.table_flatten(tbl)
+        result = CoreCommons.table_nest(f_tbl)
+        pprint(result[:1])
+
+        # Organisation
         with open('../_data/Organization.txt') as f:
             document = ast.literal_eval(f.read())
+        print("\n Organisation")
+        pprint(document[:1])
         tbl = pa.Table.from_pylist(document)
-        result = CoreCommons.table_flatten(tbl)
-        print(result.shape)
+        f_tbl = CoreCommons.table_flatten(tbl)
+        result = CoreCommons.table_nest(f_tbl)
+        pprint(result[:1])
 
     def test_table_flatten(self):
         document = [
@@ -90,6 +114,7 @@ class CommonsTest(unittest.TestCase):
         self.assertEqual(len(result[1].get('contactMedium')), 5)
         self.assertEqual(len(result[2].get('contactMedium')), 4)
         self.assertCountEqual(['_id', 'gender', 'familyName', 'givenName', 'middleName'], result[6].keys())
+        pprint(result[:1])
 
     def test_array_cast(self):
         num = pa.array([1.0, 12.0, 5.0, None], pa.float64())

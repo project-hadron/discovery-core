@@ -298,7 +298,7 @@ class CoreCommons(object):
                 if pa.types.is_list(record.type):
                     total_max = pc.max(pc.list_value_length(record)).as_py()
                     if total_max is None:
-                        continue
+                        total_max = 1
                     record = pc.list_slice(record, start=0, stop=total_max, return_fixed_size_list=True)
                     for i in range(total_max):
                         try:
@@ -310,7 +310,7 @@ class CoreCommons(object):
                 if pa.types.is_struct(record.type):
                     t = t.flatten()
                     working = True
-        # drop columns
+        # drop null columns
         for n in t.column_names:
             c = t.column(n)
             if pa.types.is_boolean(c.type):
@@ -324,10 +324,12 @@ class CoreCommons(object):
     def table_nest(t: pa.Table) -> list:
         """ turns a flattened table back to a nested pattern """
 
-        def add_leaf(b_tree, b_keys, value):
+        def add_leaf(b_tree, b_keys, b_value):
             l_key = b_keys[0]
             try:
-                b_tree[l_key] = value if len(b_keys) == 1 else add_leaf(b_tree[l_key] if l_key in b_tree else {}, b_keys[1:], value)
+                b_tree[l_key] = b_value if len(b_keys) == 1 else add_leaf(b_tree[l_key] if l_key in b_tree else {}, b_keys[1:], b_value)
+            except TypeError as e:
+                b_tree[l_key].append(b_value)
             except (AttributeError, KeyError):
                 pass
             return b_tree
