@@ -1,3 +1,4 @@
+import ast
 import unittest
 import os
 import shutil
@@ -46,6 +47,13 @@ class CommonsTest(unittest.TestCase):
         with self.assertRaises(ValueError) as context:
             result = CoreCommons.table_append(t1, None)
         self.assertTrue("As a minimum, the second value passed must be a PyArrow Table" in str(context.exception))
+
+    def test_table_flatten_file(self):
+        with open('../_data/Organization.txt') as f:
+            document = ast.literal_eval(f.read())
+        tbl = pa.Table.from_pylist(document)
+        result = CoreCommons.table_flatten(tbl)
+        print(result.shape)
 
     def test_table_flatten(self):
         document = [

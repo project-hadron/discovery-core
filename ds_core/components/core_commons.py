@@ -297,6 +297,8 @@ class CoreCommons(object):
                     record = record.combine_chunks()
                 if pa.types.is_list(record.type):
                     total_max = pc.max(pc.list_value_length(record)).as_py()
+                    if total_max is None:
+                        continue
                     record = pc.list_slice(record, start=0, stop=total_max, return_fixed_size_list=True)
                     for i in range(total_max):
                         try:
