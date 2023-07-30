@@ -116,6 +116,18 @@ class CommonsTest(unittest.TestCase):
         self.assertCountEqual(['_id', 'gender', 'familyName', 'givenName', 'middleName'], result[6].keys())
         pprint(result[:1])
 
+    def test_column_precision(self):
+        num = pa.array([1.471, 12, 5.33, None], pa.float64())
+        text = pa.array(["Blue", "Green", None, 'Blue'], pa.string())
+        val = pa.array([1, 0, 1, None], pa.int64())
+        result = CoreCommons.column_precision(num)
+        self.assertEqual(3, result)
+        result = CoreCommons.column_precision(val)
+        self.assertEqual(0, result)
+        with self.assertRaises(ValueError) as context:
+            result = CoreCommons.column_precision(text)
+        self.assertTrue("The array should be numeric, type 'string' sent." in str(context.exception))
+
     def test_array_cast(self):
         num = pa.array([1.0, 12.0, 5.0, None], pa.float64())
         date = pa.array(["2023-01-02 04:49:06", "2023-01-02 04:57:12", None, "2023-01-02 05:23:50"], pa.string())

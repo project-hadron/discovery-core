@@ -334,20 +334,20 @@ class CoreCommons(object):
                 pass
             return b_tree
 
-        def del_leaf(b_tree, b_keys):
-            l_key = b_keys[0]
-            try:
-                b_tree.pop(l_key) if len(b_keys) == 1 else del_leaf(b_tree[l_key] if l_key in b_tree else {}, b_keys[1:])
-            except (AttributeError, KeyError):
-                pass
-            return b_tree
-
-        def traverse(d, path=[]):
-            if isinstance(d, dict):
-                for (k, v) in d.items():
-                    yield from traverse(v, [*path, k])
-                else:
-                    yield [*path, d]
+        # def del_leaf(b_tree, b_keys):
+        #     l_key = b_keys[0]
+        #     try:
+        #         b_tree.pop(l_key) if len(b_keys) == 1 else del_leaf(b_tree[l_key] if l_key in b_tree else {}, b_keys[1:])
+        #     except (AttributeError, KeyError):
+        #         pass
+        #     return b_tree
+        #
+        # def traverse(d, path=[]):
+        #     if isinstance(d, dict):
+        #         for (k, v) in d.items():
+        #             yield from traverse(v, [*path, k])
+        #         else:
+        #             yield [*path, d]
 
         def set_list(struct, l_keys, l_tree):
             for l_branch in tuple(struct.keys()):
@@ -384,6 +384,13 @@ class CoreCommons(object):
             return a.cast(ty)
         except (ArrowInvalid, ArrowTypeError, ArrowNotImplementedError):
             return a
+
+    @staticmethod
+    def column_precision(a: pa.Array):
+        """returns the max precision in a numeric pyarrow array"""
+        if pa.types.is_floating(a.type) or pa.types.is_integer(a.type):
+            return max([CoreCommons.precision_scale(x)[1] for x in a.drop_null().to_pylist()])
+        raise ValueError(f"The array should be numeric, type '{a.type}' sent.")
 
     @staticmethod
     def table_cast(t: pa.Table, cat_max: int=None):
