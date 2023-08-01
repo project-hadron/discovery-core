@@ -227,15 +227,15 @@ class CoreCommons(object):
         return [round((n_range * ((x - seq_min) / seq_range)) + a, precision) for x in seq]
 
     @staticmethod
-    def filter_headers(data: pa.Table, headers: [str, list]=None, d_type: pa.DataType=None, drop: bool=None,
-                       regex: [str, list]=None) -> list:
-        """ returns a list of headers based on the filter criteria
+    def filter_headers(data: pa.Table, headers: [str, list]=None, d_types: list=None, regex: [str, list]=None,
+                       drop: bool=None) -> list:
+        """ returns a list of headers based on the filter criteria. The order of filter is d_type, headers then regex.
 
         :param data: the Canonical data to get the column headers from
-        :param headers: a list of headers to drop or filter on type
-        :param d_type: a li
-        :param drop: to drop or not drop the selection
-        :param regex: a regular expression to search the headers
+        :param d_types: (optional) a list of pyarrow DataTypes of the columns headers
+        :param headers: (optional) a list of header strings to select from the columns headers
+        :param regex: (optional) a regular expression to search from the columns headers
+        :param drop: (optional) reverses the selection and drops the selected column headers
         :return: a filtered list of headers
 
         :raise: TypeError if any of the types are not as expected
@@ -245,8 +245,15 @@ class CoreCommons(object):
         drop = drop if isinstance(drop, bool) else False
         headers = CoreCommons.list_formatter(headers)
         regex = '|'.join(CoreCommons.list_formatter(regex))
-
-        rtn_list = data.column_names
+        rtn_list = []
+        if d_types is not None and d_types:
+            for n in data.column_names:
+                c = data.column(n).combine_chunks()
+                for t in d_types:
+                    if c.type.equals(t):
+                        rtn_list.append(n)
+        else:
+            rtn_list = data.column_names
         if headers is not None and headers:
             rtn_list = CoreCommons.list_intersect(rtn_list, headers)
         if regex is not None and regex:
@@ -257,16 +264,20 @@ class CoreCommons(object):
         return rtn_list
 
     @staticmethod
-    def filter_columns(data: pa.Table, headers=None, drop: bool=None, regex: [str, list]=None) -> pa.Table:
-        """ Returns a subset of columns based on the filter criteria
+    def filter_columns(data: pa.Table, headers=None, d_types: list=None, regex: [str, list]=None,
+                       drop: bool=None) -> pa.Table:
+        """ Returns a subset of columns based on the filter criteria. The order of filter is d_type, headers then regex.
 
         :param data: the Canonical data to get the column headers from
-        :param headers: a list of headers to drop or filter on type
-        :param drop: to drop or not drop the headers
-        :param regex: a regular expression to search the headers
+        :param d_types: (optional) a list of pyarrow DataTypes of the columns headers
+        :param headers: (optional) a list of header strings to select from the columns headers
+        :param regex: (optional) a regular expression to search from the columns headers
+        :param drop: (optional) reverses the selection and drops the selected column headers
+        :return: a filtered list of headers
         :return:
         """
-        return data.select(CoreCommons.filter_headers(data=data, headers=headers, drop=drop, regex=regex))
+        return data.select(CoreCommons.filter_headers(data=data, headers=headers, d_types=d_types, regex=regex,
+                                                      drop=drop))
 
     @staticmethod
     def table_append(t1: pa.Table, t2: pa.Table):

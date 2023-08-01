@@ -8,8 +8,8 @@ import pandas as pd
 
 from ds_core.components.abstract_component import AbstractComponent
 from ds_core.handlers.abstract_handlers import ConnectorContract
-from ds_core.intent.python_cleaners_intent import PyarrowCleanersIntentModel as ControlIntentModel
 from ds_core.properties.abstract_properties import AbstractPropertyManager
+from test.intent.pyarrow_intent_model import PyarrowIntentModel
 from ds_core.properties.property_manager import PropertyManager
 
 
@@ -29,7 +29,7 @@ class ControlComponent(AbstractComponent):
     DEFAULT_SOURCE_HANDLER = 'PyarrowSourceHandler'
     DEFAULT_PERSIST_HANDLER = 'PyarrowPersistHandler'
 
-    def __init__(self, property_manager: ControlPropertyManager, intent_model: ControlIntentModel,
+    def __init__(self, property_manager: ControlPropertyManager, intent_model: PyarrowIntentModel,
                  default_save=None, reset_templates: bool = None, template_path: str=None, template_module: str=None,
                  template_source_handler: str=None, template_persist_handler: str=None, align_connectors: bool = None):
         super().__init__(property_manager=property_manager, intent_model=intent_model, default_save=default_save,
@@ -48,7 +48,7 @@ class ControlComponent(AbstractComponent):
         pm_module = pm_module if isinstance(pm_module, str) else 'ds_core.handlers.pyarrow_handlers'
         pm_handler = pm_handler if isinstance(pm_handler, str) else 'PyarrowPersistHandler'
         _pm = ControlPropertyManager(task_name=task_name, creator=creator)
-        _intent_model = ControlIntentModel(property_manager=_pm, default_save_intent=default_save_intent,
+        _intent_model = PyarrowIntentModel(property_manager=_pm, default_save_intent=default_save_intent,
                                            default_intent_level=default_intent_level,
                                            order_next_available=order_next_available,
                                            default_replace_intent=default_replace_intent)

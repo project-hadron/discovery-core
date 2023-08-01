@@ -5,6 +5,7 @@ import shutil
 from pprint import pprint
 
 import pyarrow as pa
+import pyarrow.parquet as pq
 from ds_core.components.core_commons import DataAnalytics, CoreCommons
 from ds_core.properties.property_manager import PropertyManager
 
@@ -178,34 +179,26 @@ class CommonsTest(unittest.TestCase):
         self.assertEqual(control, result.schema)
 
     def test_filter_headers(self):
-        num = pa.array([1.0, 12.0, 5.0, None], pa.float64())
-        date = pa.array(["2023-01-02 04:49:06", "2023-01-02 04:57:12", None, "2023-01-02 05:23:50"], pa.string())
-        value = pa.array([None, '1.5', '3.2', '2.0'], pa.string())
-        text = pa.array(["Blue", "Green", None, 'Red'], pa.string())
-        bool1 = pa.array([1, 0, 1, None], pa.int64())
-        bool2 = pa.array(['true', 'true', None, 'false'], pa.string())
-        cat = pa.array([None, 'M', 'F', 'M'], pa.string())
-        tbl = pa.table([num, value, date, text, bool1, bool2, cat],
-                       names=['num', 'value', 'date', 'text', 'bool1', 'bool2', 'cat'])
+        tbl = pq.read_table("../_data/sample_types.parquet")
         result = CoreCommons.filter_headers(tbl)
         self.assertEqual(tbl.column_names, result)
-        result = CoreCommons.filter_headers(tbl, headers=['num', 'value', 'text'])
-        self.assertCountEqual(['num', 'value', 'text'], result)
-        result = CoreCommons.filter_headers(tbl, regex=['t', 'value'])
-        self.assertCountEqual(['value', 'date', 'text', 'cat'], result)
-        result = CoreCommons.filter_headers(tbl, regex=['t', 'value'], drop=True)
-        self.assertCountEqual(['bool1', 'bool2', 'num'], result)
-        result = CoreCommons.filter_headers(tbl, headers=['value', 'text', 'bool1'], regex='e')
-        self.assertCountEqual(['value', 'text'], result)
+        result = CoreCommons.filter_headers(tbl, headers=['num', 'string', 'cat'])
+        self.assertCountEqual(['num', 'string', 'cat'], result)
+        result = CoreCommons.filter_headers(tbl, regex=['num', 'int'])
+        self.assertCountEqual(['num','int','num_null','int_null','nulls_int'], result)
+        result = CoreCommons.filter_headers(tbl, regex=['null', 'num', 'int', 'date', 'nest'], drop=True)
+        self.assertCountEqual(['binary', 'cat', 'bool', 'string'], result)
+        result = CoreCommons.filter_headers(tbl, headers=['num', 'int', 'string'], regex='i')
+        self.assertCountEqual(['int', 'string'], result)
+        result = CoreCommons.filter_headers(tbl, d_types=[pa.bool_(), pa.string()])
+        self.assertCountEqual(['bool', 'string', 'bool_null', 'string_null', 'nulls_str'], result)
+        result = CoreCommons.filter_headers(tbl, headers=['num','int','string'], d_types=[pa.bool_(), pa.string()])
+        self.assertCountEqual(['string'], result)
 
     def test_filter_columns(self):
-        num = pa.array([1.0, 12.0, 5.0, None], pa.float64())
-        date = pa.array(["2023-01-02 04:49:06", "2023-01-02 04:57:12", None, "2023-01-02 05:23:50"], pa.string())
-        value = pa.array([None, '1.5', '3.2', '2.0'], pa.string())
-        text = pa.array(["Blue", "Green", None, 'Red'], pa.string())
-        tbl = pa.table([num, value, date, text], names=['num', 'value', 'date', 'text'])
-        result = CoreCommons.filter_columns(tbl, headers=['num', 'date'])
-        self.assertCountEqual(['num', 'date'], result.column_names)
+        tbl = pq.read_table("../_data/sample_types.parquet")
+        result = CoreCommons.filter_columns(tbl, headers=['num', 'date', 'string'], regex='t', d_types=[pa.string()])
+        self.assertCountEqual(['string'], result.column_names)
 
     def test_list_formatter(self):
         sample = {'A': [1,2], 'B': [1,2], 'C': [1,2]}
