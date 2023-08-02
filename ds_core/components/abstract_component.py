@@ -590,7 +590,7 @@ class AbstractComponent(ABC):
         for name in self.pm.list_formatter(connector_names):
             self.pm.set_connector_aligned(connector_name=name, aligned=aligned)
         self.pm_persist(save)
-        return
+        return self
 
     def set_source(self, uri_file: str, save: bool=None, **kwargs):
         """sets the source contract CONNECTOR_SOURCE using the TEMPLATE_SOURCE connector contract,
@@ -600,6 +600,7 @@ class AbstractComponent(ABC):
         """
         self.add_connector_from_template(connector_name=self.CONNECTOR_SOURCE, uri_file=uri_file,
                                          template_name=self.pm.TEMPLATE_SOURCE, save=save, **kwargs)
+        return self
 
     def set_source_uri(self, uri: str, save: bool=None, template_aligned: bool=None, **kwargs):
         """ Sets the source contract giving the full uri path. This is a shortcut of set_source_contract(...), not
@@ -612,7 +613,7 @@ class AbstractComponent(ABC):
         template_aligned = template_aligned if isinstance(template_aligned, bool) else False
         self.add_connector_uri(connector_name=self.CONNECTOR_SOURCE, save=save, uri=uri,
                                template_aligned=template_aligned, **kwargs)
-        return
+        return self
 
     def set_source_contract(self, connector_contract: ConnectorContract, template_aligned: bool=None, save: bool=None):
         """ Sets the source contract using the class CONNECTOR_SOURCE constant
@@ -624,7 +625,7 @@ class AbstractComponent(ABC):
         template_aligned = template_aligned if isinstance(template_aligned, bool) else False
         self.add_connector_contract(connector_name=self.CONNECTOR_SOURCE, connector_contract=connector_contract,
                                     template_aligned=template_aligned, save=save)
-        return
+        return self
 
     def get_persist_contract(self) -> ConnectorContract:
         """ gets the persist connector contract that can be used as the next chain source. If
@@ -648,6 +649,7 @@ class AbstractComponent(ABC):
         uri_file = uri_file if isinstance(uri_file, str) else file_pattern
         self.add_connector_from_template(connector_name=self.CONNECTOR_PERSIST, uri_file=uri_file,
                                          template_name=self.pm.TEMPLATE_PERSIST, save=save, **kwargs)
+        return self
 
     def set_persist_uri(self, uri: str, save: bool=None, template_aligned: bool=None, **kwargs):
         """ Sets the persist contract giving the full uri path. This is a shortcut of set_persist_contract(...), not
@@ -660,7 +662,7 @@ class AbstractComponent(ABC):
         template_aligned = template_aligned if isinstance(template_aligned, bool) else False
         self.add_connector_uri(connector_name=self.CONNECTOR_PERSIST, save=save, uri=uri,
                                template_aligned=template_aligned, **kwargs)
-        return
+        return self
 
     def set_persist_contract(self, connector_contract: ConnectorContract, save: bool=None):
         """ Sets the persist contract.
@@ -670,7 +672,7 @@ class AbstractComponent(ABC):
         """
         self.add_connector_contract(connector_name=self.CONNECTOR_PERSIST, connector_contract=connector_contract,
                                     save=save)
-        return
+        return self
 
     def set_report_persist(self, reports: [str, list], project: str=None, path: [str, list]=None, prefix: str=None,
                            suffix: str=None, file_type: str=None, versioned: bool=None, stamped: str=None,
