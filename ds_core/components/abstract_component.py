@@ -458,7 +458,7 @@ class AbstractComponent(ABC):
                                                version=self.pm.version, **kwargs)
         self.add_connector_contract(connector_name=connector_name, connector_contract=connector_contract,
                                     template_aligned=template_aligned, save=save)
-        return
+        return self
 
     def add_connector_contract(self, connector_name: str, connector_contract: ConnectorContract,
                                template_aligned: bool=None, save: bool=None):
@@ -475,7 +475,7 @@ class AbstractComponent(ABC):
         self.pm.set_connector_contract(connector_name=connector_name, connector_contract=connector_contract,
                                        aligned=template_aligned)
         self.pm_persist(save)
-        return
+        return self
 
     def add_connector_source(self, connector_name: str, uri_file: str, save: bool=None, **kwargs):
         """ Adds a connector using settings from the self.pm.TEMPLATE_SOURCE template connector.
@@ -488,7 +488,7 @@ class AbstractComponent(ABC):
         """
         self.add_connector_from_template(connector_name=connector_name, uri_file=uri_file,
                                          template_name=self.pm.TEMPLATE_SOURCE, save=save, **kwargs)
-        return
+        return self
 
     def add_connector_persist(self, connector_name: str, uri_file: str, save: bool=None, **kwargs):
         """ Adds a connector using settings from the self.pm.TEMPLATE_PERSIST template connector.
@@ -502,7 +502,7 @@ class AbstractComponent(ABC):
         """
         self.add_connector_from_template(connector_name=connector_name, uri_file=uri_file,
                                          template_name=self.pm.TEMPLATE_PERSIST, save=save, **kwargs)
-        return
+        return self
 
     def add_connector_from_template(self, connector_name: str, uri_file: str, template_name: str,  save: bool=None,
                                     **kwargs):
@@ -526,7 +526,7 @@ class AbstractComponent(ABC):
                                version=self.pm.version, **kwargs)
         self.add_connector_contract(connector_name=connector_name, connector_contract=cc, template_aligned=True,
                                     save=save)
-        return
+        return self
 
     def reset_template_connectors(self, save: bool=None):
         """ resets connector contracts with template path and handler where they are template aligned.
