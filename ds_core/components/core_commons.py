@@ -199,6 +199,22 @@ class CoreCommons(object):
         return rtn_seq
 
     @staticmethod
+    def list_search(seq: list, value: [int,float,str], low: int=None, high: int=None):
+        """ A binary search for a value in a list sequence between two index"""
+        low = low if isinstance(low, int) else 0
+        high = high if isinstance(high, int) else len(seq)
+        if high >= low:
+            mid = int((high + low) / 2)
+            if seq[mid] == value:
+                return mid
+            elif seq[mid] > value:
+                return CoreCommons.list_search(seq, value, low, mid - 1)
+            else:
+                return CoreCommons.list_search(seq, value, mid + 1, high)
+        else:
+            return -1
+
+    @staticmethod
     def list_standardize(seq: list, precision: int=None) -> list:
         """standardise a numeric list"""
         if not isinstance(seq, list):
@@ -274,7 +290,7 @@ class CoreCommons(object):
         :param regex: (optional) a regular expression to search from the columns headers
         :param drop: (optional) reverses the selection and drops the selected column headers
         :return: a filtered list of headers
-        :return:
+        :return: pa.Table
         """
         return data.select(CoreCommons.filter_headers(data=data, headers=headers, d_types=d_types, regex=regex,
                                                       drop=drop))

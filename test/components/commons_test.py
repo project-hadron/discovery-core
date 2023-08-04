@@ -199,6 +199,8 @@ class CommonsTest(unittest.TestCase):
         tbl = pq.read_table("../_data/sample_types.parquet")
         result = CoreCommons.filter_columns(tbl, headers=['num', 'date', 'string'], regex='t', d_types=[pa.string()])
         self.assertCountEqual(['string'], result.column_names)
+        result = CoreCommons.filter_columns(tbl, headers='num')
+        self.assertCountEqual(['num'], result.column_names)
 
     def test_list_formatter(self):
         sample = {'A': [1,2], 'B': [1,2], 'C': [1,2]}
@@ -225,7 +227,6 @@ class CommonsTest(unittest.TestCase):
         sample = -4
         self.assertEqual((1, 0), CoreCommons.precision_scale(sample))
 
-
     def test_list_dup(self):
         seq = ['A', 'B', 'B', 'C', 'C', 'D']
         result = CoreCommons.list_dup(seq=seq)
@@ -233,6 +234,15 @@ class CommonsTest(unittest.TestCase):
         seq = ['A', 'B', 'C', 'D']
         result = CoreCommons.list_dup(seq=seq)
         self.assertCountEqual([], result)
+
+    def tests_list_beta_find(self):
+        seq = ['A', 'B', 'C', 'D', 'E']
+        result = CoreCommons.list_search(seq, 'A')
+        self.assertEqual(0, result)
+        result = CoreCommons.list_search(seq, 'C')
+        self.assertEqual(2, result)
+        result = CoreCommons.list_search(seq, 'E')
+        self.assertEqual(4, result)
 
     def test_list_standardize(self):
         seq = [100, 75, 50, 25, 0]
