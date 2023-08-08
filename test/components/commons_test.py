@@ -129,6 +129,14 @@ class CommonsTest(unittest.TestCase):
             result = CoreCommons.column_precision(text)
         self.assertTrue("The array should be numeric, type 'string' sent." in str(context.exception))
 
+    def test_column_join(self):
+        a = pa.array([1,2,3,4,5])
+        b = pa.array(list('abcde'))
+        c = CoreCommons.column_join(a,b)
+        self.assertEqual(['1a', '2b', '3c', '4d', '5e'], c.to_pylist())
+        c = CoreCommons.column_join(a,b,sep='_')
+        self.assertEqual(['1_a', '2_b', '3_c', '4_d', '5_e'], c.to_pylist())
+
     def test_array_cast(self):
         num = pa.array([1.0, 12.0, 5.0, None], pa.float64())
         date = pa.array(["2023-01-02 04:49:06", "2023-01-02 04:57:12", None, "2023-01-02 05:23:50"], pa.string())

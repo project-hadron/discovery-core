@@ -413,6 +413,13 @@ class CoreCommons(object):
             return a
 
     @staticmethod
+    def column_join(a: pa.Array, b: pa.Array, sep: str=None):
+        """ joins two columns to create a compound column. The separator is optional"""
+        sep = sep if isinstance(sep, str) else ''
+        return pc.binary_join_element_wise(pc.cast(a, pa.string()), pc.cast(b, pa.string()), sep)
+
+
+    @staticmethod
     def column_precision(a: pa.Array):
         """returns the max precision in a numeric pyarrow array"""
         if pa.types.is_floating(a.type) or pa.types.is_integer(a.type):
