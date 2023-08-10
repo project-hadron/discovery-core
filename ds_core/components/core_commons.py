@@ -310,10 +310,10 @@ class CoreCommons(object):
         return t1
 
     @staticmethod
-    def table_flatten(t :pa.Table):
-        """ flattens a table of lists and struct data types """
+    def table_flatten(t :pa.Table, drop_null: bool=None):
+        """ flattens a table of lists and struct data types. If dro_nulls is True, null columns are dropped"""
+        drop_null = drop_null if isinstance(drop_null, bool) else True
         working = True
-        row_count = t.num_rows
         while working:
             working = False
             for c in t.column_names:
@@ -338,13 +338,14 @@ class CoreCommons(object):
                     t = t.flatten()
                     working = True
         # drop null columns
-        for n in t.column_names:
-            c = t.column(n)
-            if pa.types.is_boolean(c.type):
-                if not pc.all(c).as_py():
+        if drop_null:
+            for n in t.column_names:
+                c = t.column(n)
+                if pa.types.is_boolean(c.type):
+                    if not pc.all(c).as_py():
+                        t = t.drop_columns(n)
+                elif len(c.drop_null()) == 0:
                     t = t.drop_columns(n)
-            elif len(c.drop_null()) == 0:
-                t = t.drop_columns(n)
         return t
 
     @staticmethod
@@ -361,14 +362,6 @@ class CoreCommons(object):
                 pass
             return b_tree
 
-        # def del_leaf(b_tree, b_keys):
-        #     l_key = b_keys[0]
-        #     try:
-        #         b_tree.pop(l_key) if len(b_keys) == 1 else del_leaf(b_tree[l_key] if l_key in b_tree else {}, b_keys[1:])
-        #     except (AttributeError, KeyError):
-        #         pass
-        #     return b_tree
-        #
         # def traverse(d, path=[]):
         #     if isinstance(d, dict):
         #         for (k, v) in d.items():
