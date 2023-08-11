@@ -325,7 +325,7 @@ class AbstractComponent(ABC):
     def _from_handler(cls, schema: str) -> (str, str, str):
         """ Class Factory Method that builds the connector handlers for the schema."""
         schema = schema if isinstance(schema, str) else ""
-        for _package in ['ds_discovery', 'ds_connectors']:
+        for _package in ['ds_core, ds_capability']:
             _module_name = f'{_package}.handlers.{schema.lower()}_handlers'
             _source_handler = f'{schema.title()}SourceHandler'
             _persist_handler = f'{schema.title()}PersistHandler'

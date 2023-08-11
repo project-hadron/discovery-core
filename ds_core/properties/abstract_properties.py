@@ -736,7 +736,7 @@ class AbstractPropertyManager(ABC):
         if str(_path).startswith('${'):
             _path = ConnectorContract.parse_environ(_path)
         _schema, _, _ = ConnectorContract.parse_address_elements(uri=_path)
-        for _package in ['ds_discovery', 'ds_connectors']:
+        for _package in ['ds_core, ds_capability']:
             _module_name = f'{_package}.handlers.{_schema.lower()}_handlers'
             _handler = f'{_schema.title()}PersistHandler'
             if HandlerFactory.check_handler(_module_name, _handler):
