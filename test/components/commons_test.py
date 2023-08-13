@@ -5,6 +5,7 @@ import shutil
 from pprint import pprint
 
 import pyarrow as pa
+import pyarrow.compute as pc
 import pyarrow.parquet as pq
 from ds_core.components.core_commons import DataAnalytics, CoreCommons
 from ds_core.properties.property_manager import PropertyManager
@@ -117,6 +118,19 @@ class CommonsTest(unittest.TestCase):
         self.assertCountEqual(['_id', 'gender', 'familyName', 'givenName', 'middleName'], result[6].keys())
         pprint(result[:1])
 
+    def test_table_nest_types(self):
+        num = pa.array([1.0, 12.0, 5.0, None], pa.float64())
+        val = pa.array([7, None, 3, 5], pa.int64())
+        date = pc.strptime(["2023-01-02 04:49:06", "2023-01-02 04:57:12", None, "2023-01-02 05:23:50"], format='%Y-%m-%d %H:%M:%S', unit='ns')
+        text = pa.array(["Blue", "Green", None, 'Red'], pa.string())
+        binary = pa.array([True, True, None, False], pa.bool_())
+        cat = pa.array([None, 'M', 'F', 'M'], pa.string()).dictionary_encode()
+        tbl = pa.table([num, val, date, text, binary, cat],
+                       names=['num', 'int', 'date', 'text', 'bool', 'cat'])
+        result = CoreCommons.table_nest(tbl)
+        print(result)
+
+
     def test_column_precision(self):
         num = pa.array([1.471, 12, 5.33, None], pa.float64())
         text = pa.array(["Blue", "Green", None, 'Blue'], pa.string())
@@ -139,7 +153,7 @@ class CommonsTest(unittest.TestCase):
 
     def test_array_cast(self):
         num = pa.array([1.0, 12.0, 5.0, None], pa.float64())
-        date = pa.array(["2023-01-02 04:49:06", "2023-01-02 04:57:12", None, "2023-01-02 05:23:50"], pa.string())
+        date = pc.strptime(["2023-01-02 04:49:06", "2023-01-02 04:57:12", None, "2023-01-02 05:23:50"], format='%Y-%m-%d %H:%M:%S', unit='ns')
         text = pa.array(["Blue", "Green", None, 'Blue'], pa.string())
         bool1 = pa.array([1, 0, 1, None], pa.int64())
         bool2 = pa.array(['true', 'true', None, 'false'], pa.string())
@@ -157,7 +171,7 @@ class CommonsTest(unittest.TestCase):
 
     def test_table_cast(self):
         num = pa.array([1.0, 12.0, 5.0, None], pa.float64())
-        date = pa.array(["2023-01-02 04:49:06", "2023-01-02 04:57:12", None, "2023-01-02 05:23:50"], pa.string())
+        date = pc.strptime(["2023-01-02 04:49:06", "2023-01-02 04:57:12", None, "2023-01-02 05:23:50"], format='%Y-%m-%d %H:%M:%S', unit='ns')
         value = pa.array([None, '1.5', '3.2', '2.0'], pa.string())
         text = pa.array(["Blue", "Green", None, 'Red'], pa.string())
         bool1 = pa.array([1, 0, 1, None], pa.int64())

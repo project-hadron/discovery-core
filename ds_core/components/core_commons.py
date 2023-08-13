@@ -353,6 +353,8 @@ class CoreCommons(object):
         """ turns a flattened table back to a nested pattern """
 
         def add_leaf(b_tree, b_keys, b_value):
+            if b_value is None:
+                return b_tree
             l_key = b_keys[0]
             try:
                 b_tree[l_key] = b_value if len(b_keys) == 1 else add_leaf(b_tree[l_key] if l_key in b_tree else {}, b_keys[1:], b_value)
@@ -389,10 +391,12 @@ class CoreCommons(object):
             tree = {}
             for c in t.column_names:
                 names = c.split('.')
-                value = t.column(c)[idx].as_py()
-                if value is None:
-                    continue
-                tree = add_leaf(tree, names, t.column(c)[idx].as_py())
+                value = t.column(c).combine_chunks()
+                if pa.types.is_timestamp(value.type) or pa.types.is_time(value.type):
+                    value = pc.strftime(value)
+                elif pa.types.is_dictionary(value.type):
+                    value = value.dictionary_decode()
+                tree = add_leaf(tree, names, value[idx].as_py())
             tree = set_list(tree, [], tree)
             document.append(tree)
         return document
