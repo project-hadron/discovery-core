@@ -118,7 +118,7 @@ class CommonsTest(unittest.TestCase):
         self.assertCountEqual(['_id', 'gender', 'familyName', 'givenName', 'middleName'], result[6].keys())
         pprint(result[:1])
 
-    def test_table_nest_types(self):
+    def test_table_nest_flatten(self):
         num = pa.array([1.0, 12.0, 5.0, None], pa.float64())
         val = pa.array([7, None, 3, 5], pa.int64())
         date = pc.strptime(["2023-01-02 04:49:06", "2023-01-02 04:57:12", None, "2023-01-02 05:23:50"], format='%Y-%m-%d %H:%M:%S', unit='ns')
@@ -128,7 +128,13 @@ class CommonsTest(unittest.TestCase):
         tbl = pa.table([num, val, date, text, binary, cat],
                        names=['num', 'int', 'date', 'text', 'bool', 'cat'])
         result = CoreCommons.table_nest(tbl)
-        print(result)
+        pprint(result)
+        print('')
+        t = pa.Table.from_pylist(result)
+        print(t.schema)
+        print('')
+        result = CoreCommons.table_flatten(t)
+        print(result.schema)
 
 
     def test_column_precision(self):

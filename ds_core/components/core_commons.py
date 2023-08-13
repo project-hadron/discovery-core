@@ -341,10 +341,7 @@ class CoreCommons(object):
         if drop_null:
             for n in t.column_names:
                 c = t.column(n)
-                if pa.types.is_boolean(c.type):
-                    if not pc.all(c).as_py():
-                        t = t.drop_columns(n)
-                elif len(c.drop_null()) == 0:
+                if len(c.drop_null()) == 0:
                     t = t.drop_columns(n)
         return t
 
@@ -353,7 +350,7 @@ class CoreCommons(object):
         """ turns a flattened table back to a nested pattern """
 
         def add_leaf(b_tree, b_keys, b_value):
-            if b_value is None:
+            if b_value is None and len(b_keys) > 1:
                 return b_tree
             l_key = b_keys[0]
             try:
