@@ -355,8 +355,18 @@ class CoreCommons(object):
             l_key = b_keys[0]
             try:
                 b_tree[l_key] = b_value if len(b_keys) == 1 else add_leaf(b_tree[l_key] if l_key in b_tree else {}, b_keys[1:], b_value)
-            except TypeError as e:
-                b_tree[l_key].append(b_value)
+            except TypeError:
+                if isinstance(b_tree[l_key], list):
+                    for i in b_tree[l_key]:
+                        set_list(i, [], i)
+            except (AttributeError, KeyError):
+                pass
+            return b_tree
+
+        def del_leaf(b_tree, b_keys):
+            l_key = b_keys[0]
+            try:
+                b_tree.pop(l_key) if len(b_keys) == 1 else del_leaf(b_tree[l_key] if l_key in b_tree else {}, b_keys[1:])
             except (AttributeError, KeyError):
                 pass
             return b_tree

@@ -118,6 +118,16 @@ class CommonsTest(unittest.TestCase):
         self.assertCountEqual(['_id', 'gender', 'familyName', 'givenName', 'middleName'], result[6].keys())
         pprint(result[:1])
 
+    def test_table_nest_list(self):
+        document = [{'a' : [{'b': 1, 'c': [{'z': 6}]},
+                            {'c': [{'z': 4}]}]
+                     }]
+        tbl = CoreCommons.table_flatten(pa.Table.from_pylist(document))
+        print(tbl.column_names , "\n\n")
+        result = CoreCommons.table_nest(tbl)
+        print("\n\n", result)
+
+
     def test_table_nest_flatten(self):
         num = pa.array([1.0, 12.0, 5.0, None], pa.float64())
         val = pa.array([7, None, 3, 5], pa.int64())
