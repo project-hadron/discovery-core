@@ -8,7 +8,7 @@ import pyarrow as pa
 import pyarrow.compute as pc
 
 from ds_core.handlers.abstract_handlers import ConnectorContract
-from ds_core.handlers.event_handlers import EventSourceHandler, EventPersistHandler
+from ds_core.handlers.event_handlers import EventSourceHandler, EventPersistHandler, EventManager
 from ds_core.properties.property_manager import PropertyManager
 
 # Pandas setup
@@ -59,13 +59,27 @@ class FeatureBuilderTest(unittest.TestCase):
         except OSError:
             pass
 
-    def test_for_smoke(self):
+    def test_event_manager(self):
         tbl = get_table()
-        self.assertEqual((7, 6), tbl.shape)
+        em = EventManager()
+        # set
+        em.set('task', tbl)
+        self.assertTrue(em.is_event('task'))
+        self.assertTrue(EventManager().is_event('task'))
+        self.assertEqual(['task'], em.event_names())
+        self.assertTrue(tbl.equals(em.get('task')))
+        # update
+        sub_tbl = tbl.drop_columns(['num', 'cat'])
+        em.update('task', sub_tbl)
+        self.assertFalse(tbl.equals(em.get('task')))
+        self.assertTrue(sub_tbl.equals(em.get('task')))
+        # delete
+        em.delete('task')
+        self.assertFalse(em.is_event('task'))
 
     def test_connector_contract(self):
         tbl = get_table()
-        uri = 'event://book_name/'
+        uri = 'event://task/'
         cc = ConnectorContract(uri, 'module_name', 'handler')
         in_handler = EventPersistHandler(cc)
         in_handler.persist_canonical(tbl)

@@ -1,3 +1,4 @@
+import threading
 import pyarrow as pa
 from typing import Dict
 
@@ -6,52 +7,44 @@ from ds_core.properties.decorator_patterns import singleton
 from ds_core.handlers.abstract_handlers import AbstractSourceHandler, AbstractPersistHandler
 from ds_core.handlers.abstract_handlers import ConnectorContract
 
+class EventManager(object):
 
-class EventController(object):
-
-    __book_catalog: Dict[str, pa.Table] = dict()
+    __event_catalog: Dict[str, pa.Table] = dict()
+    __lock = threading.Lock()
 
     @singleton
     def __new__(cls):
         return super().__new__(cls)
 
-    @property
-    def event_book_names(self) -> list:
-        """Returns the list of event book references in the catalog"""
-        return list(self.__book_catalog.keys())
+    @classmethod
+    def event_names(cls) -> list:
+        return list(cls.__event_catalog.keys())
 
-    def is_event_book(self, book_name: str) -> bool:
-        """Checks if a book_name reference exists in the book catalog"""
-        if book_name in self.event_book_names:
-            return True
-        return False
+    @classmethod
+    def is_event(cls, name: str):
+        return name in cls.__event_catalog
 
-    def add_event_book(self, book_name: str, event: pa.Table):
-        """Returns the event book instance for the given reference name"""
-        if self.is_event_book(book_name=book_name):
-            raise ValueError(f"The book name '{book_name}' already exists in the catalog and does not need to be added")
-        self.__book_catalog[book_name] = event
+    @classmethod
+    def get(cls, name: str) -> pa.Table:
+        if name in cls.__event_catalog:
+            return cls.__event_catalog[name]
 
-    def update_event_book(self, book_name: str, event: pa.Table):
-        """Returns the event book instance for the given reference name"""
-        self.__book_catalog.update({book_name: event})
-        return self.is_event_book(book_name)
+    @classmethod
+    def set(cls, name: str, event: pa.Table):
+        if name in cls.__event_catalog:
+            raise ValueError(f"The event name '{name}' already exists in the event catalog and does not need to be added")
+        with cls.__lock:
+            cls.__event_catalog[name] = event
 
+    @classmethod
+    def update(cls, name: str, event: pa.Table):
+        with cls.__lock:
+            cls.__event_catalog.update({name: event})
 
-    def remove_event_books(self, book_names: [str, list]) -> bool:
-        """removes the event book"""
-        book_names = CoreCommons.list_formatter(book_names)
-        for book in book_names:
-            if self.is_event_book(book):
-                self.__book_catalog.pop(book)
-        return True
-
-    def get_event(self, book_name: str, drop:bool=None) -> pa.Table:
-        if self.is_event_book(book_name=book_name):
-            if isinstance(drop, bool) and drop:
-                return self.__book_catalog.pop(book_name)
-            return self.__book_catalog.get(book_name)
-        raise ValueError(f"The book name '{book_name}' can not be found in the catalog")
+    @classmethod
+    def delete(cls, name: str):
+        with cls.__lock:
+            del cls.__event_catalog[name]
 
 
 class EventSourceHandler(AbstractSourceHandler):
@@ -60,8 +53,7 @@ class EventSourceHandler(AbstractSourceHandler):
     def __init__(self, connector_contract: ConnectorContract):
         """ initialise the Handler passing the connector_contract dictionary """
         super().__init__(connector_contract)
-        self.book_name = connector_contract.netloc
-        self.event_books = EventController()
+        self.event_name = connector_contract.netloc
         self._file_state = 0
         self._changed_flag = True
 
@@ -72,11 +64,15 @@ class EventSourceHandler(AbstractSourceHandler):
     def load_canonical(self, drop:bool=None, **kwargs) -> pa.Table:
         """ returns the canonical dataset based on the connector contract. """
         self.reset_changed()
-        return self.event_books.get_event(self.book_name, drop=drop)
+        em = EventManager()
+        rtn_tbl = em.get(self.event_name)
+        if isinstance(drop, bool) and drop:
+            em.delete(self.event_name)
+        return rtn_tbl
 
     def exists(self) -> bool:
         """ Returns True is the file exists """
-        self.event_books.is_event_book(self.book_name)
+        return EventManager().is_event(self.event_name)
 
     def has_changed(self) -> bool:
         """ returns the status of the change_flag indicating if the file has changed since last load or reset"""
@@ -103,10 +99,10 @@ class EventPersistHandler(EventSourceHandler, AbstractPersistHandler):
         _schema, _book_name, _ = ConnectorContract.parse_address_elements(uri=uri)
         if _schema == 'event':
             self.reset_changed(True)
-            return self.event_books.update_event_book(_book_name, canonical)
+            return EventManager().update(_book_name, canonical)
         raise LookupError(f'The schema must be event, {_schema} given')
 
     def remove_canonical(self) -> bool:
         if not isinstance(self.connector_contract, ConnectorContract):
             return False
-        self.event_books.remove_event_books(self.book_name)
+        return EventManager().delete(self.event_name)
