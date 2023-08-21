@@ -134,7 +134,7 @@ class CoreCommons(object):
         return list(set(seq).difference(set(other)))
 
     @staticmethod
-    def list_intersect(seq: list, other: list, symmetric: bool=True) -> list:
+    def list_intersect(seq: list, other: list) -> list:
         """ Useful utility method to return the intersection between two list where the list is unique."""
         if not isinstance(seq, list):
             raise ValueError("The sequence must be of type 'list'")
@@ -143,7 +143,7 @@ class CoreCommons(object):
         return list(set(seq).intersection(set(other)))
 
     @staticmethod
-    def list_union(seq: list, other: list, symmetric: bool=True) -> list:
+    def list_union(seq: list, other: list) -> list:
         """ Useful utility method to return the union between two list where the list is unique."""
         if not isinstance(seq, list):
             raise ValueError("The sequence must be of type 'list'")
@@ -305,6 +305,8 @@ class CoreCommons(object):
         if t1.shape[0] != t2.shape[0]:
             raise ValueError(f"The tables passed are not of equal row size. "
                              f"The first has '{t1.shape[0]}' rows and the second has '{t2.shape[0]}' rows")
+        # drop columns in t1 that are in t2
+        t1 = t1.drop_columns(CoreCommons.list_intersect(t1.column_names, t2.column_names))
         for c in t2.column_names:
             t1 = t1.append_column(c, t2.column(c))
         return t1
