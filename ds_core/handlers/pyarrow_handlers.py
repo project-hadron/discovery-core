@@ -49,7 +49,8 @@ class PyarrowSourceHandler(AbstractSourceHandler):
             return feather.read_table(address, **load_params)
         # csv
         if file_type.lower() in ['csv']:
-            return csv.read_csv(address, **load_params)
+            parse_options = csv.ParseOptions(**load_params)
+            return csv.read_csv(address, parse_options=parse_options)
         # json
         if file_type.lower() in ['json']:
             return json.read_json(address, **load_params)
