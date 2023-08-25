@@ -3,6 +3,7 @@ import os
 import pyarrow as pa
 import pyarrow.parquet as pq
 import pyarrow.feather as feather
+from ds_core.components.core_commons import CoreCommons
 from pyarrow import csv
 from pyarrow import json
 
@@ -48,17 +49,20 @@ class PyarrowSourceHandler(AbstractSourceHandler):
         if file_type.lower() in ['feather']:
             return feather.read_table(address, **load_params)
         # csv
-        if file_type.lower() in ['csv']:
+        if file_type.lower() in ['csv', 'gz', 'bz2']:
             parse_options = csv.ParseOptions(**load_params)
             return csv.read_csv(address, parse_options=parse_options)
         # json
         if file_type.lower() in ['json']:
             return json.read_json(address, **load_params)
         # complex nested
-        if file_type.lower() in ['txt']:
+        if file_type.lower() in ['complex', 'nested', 'txt']:
             with open(address) as f:
-                document = ast.literal_eval(f.read())
-            return pa.Table.from_pylist(document)
+                document = f.read()
+            for i in ['\n', '\t', ' ', 'null']:
+                document = document.replace(i, '')
+            document = pa.Table.from_pylist(list(eval(document)))
+            return CoreCommons.table_flatten(document)
 
         raise LookupError('The source format {} is not currently supported'.format(file_type))
 
@@ -152,13 +156,14 @@ class PyarrowPersistHandler(PyarrowSourceHandler, AbstractPersistHandler):
             feather.write_feather(canonical, _address, **write_params)
             return True
         # csv
-        if file_type.lower() in ['csv', 'tsv']:
+        if file_type.lower() in ['csv', 'gz', 'bz2']:
             csv.write_csv(canonical, _address, **write_params)
             return True
         # complex nested
-        if file_type.lower() in ['txt']:
+        if file_type.lower() in ['complex', 'nested', 'txt']:
+            values = CoreCommons.table_nest(canonical)
             with open(_address, 'w') as f:
-                f.write(str(canonical))
+                f.write(str(values))
             return True
         # not found
         raise LookupError('The file format {} is not currently supported for write'.format(file_type))

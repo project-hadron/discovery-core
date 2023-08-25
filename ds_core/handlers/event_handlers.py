@@ -2,7 +2,6 @@ import threading
 import pyarrow as pa
 from typing import Dict
 
-from ds_core.components.core_commons import CoreCommons
 from ds_core.properties.decorator_patterns import singleton
 from ds_core.handlers.abstract_handlers import AbstractSourceHandler, AbstractPersistHandler
 from ds_core.handlers.abstract_handlers import ConnectorContract
