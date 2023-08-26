@@ -59,11 +59,11 @@ class PyarrowSourceHandler(AbstractSourceHandler):
         if file_type.lower() in ['complex', 'nested', 'txt']:
             with open(address) as f:
                 document = f.read()
-            for i in ['\n', '\t', ' ', 'null']:
+            for i in ['\n', '\t', ' ']:
                 document = document.replace(i, '')
+            document = document.replace('null', 'None')
             document = pa.Table.from_pylist(list(eval(document)))
             return CoreCommons.table_flatten(document)
-
         raise LookupError('The source format {} is not currently supported'.format(file_type))
 
     def exists(self) -> bool:
