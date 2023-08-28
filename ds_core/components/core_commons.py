@@ -433,6 +433,32 @@ class CoreCommons(object):
         raise ValueError(f"The array should be numeric, type '{a.type}' sent.")
 
     @staticmethod
+    def table_fill_null(t: pa.Table):
+        rtn_tbl = None
+        for n in t.column_names:
+            c = t.column(n).combine_chunks()
+            if pa.types.is_string(c.type):
+                c = c.fill_null('')
+            elif pa.types.is_floating(c.type) or pa.types.is_integer(c.type):
+                c = c.fill_null(0)
+            elif pa.types.is_boolean(c.type):
+                c = c.fill_null(False)
+            elif pa.types.is_time(c.type) or pa.types.is_timestamp(c.type):
+                c = c.fill_null(0)
+            elif pa.types.is_dictionary(c.type):
+                c = c.fill_null('')
+            elif pa.types.is_list(c.type):
+                c = c.fill_null([])
+            elif pa.types.is_binary(c.type):
+                c = c.fill_null(b'')
+            elif pa.types.is_struct(c.type):
+                c = c.fill_null({})
+            elif pa.types.is_null(c.type):
+                c = pa.array([False] * t.num_rows, pa.bool_())
+            rtn_tbl = CoreCommons.table_append(rtn_tbl, pa.table([c], names=[n]))
+        return rtn_tbl
+
+    @staticmethod
     def table_cast(t: pa.Table, cat_max: int=None):
         """ attempt to cast a pyarrow table columns to the given type """
         cat_max = cat_max if isinstance(cat_max, int) else 40
