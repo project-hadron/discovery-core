@@ -433,7 +433,9 @@ class CoreCommons(object):
         raise ValueError(f"The array should be numeric, type '{a.type}' sent.")
 
     @staticmethod
-    def table_fill_null(t: pa.Table):
+    def table_fill_null(t: pa.Table, inclusive: bool=None):
+        """ fills default null values in a table. If inclusive keeps nested and binary typee else boolean """
+        inclusive = inclusive if isinstance(inclusive, bool) else False
         rtn_tbl = None
         for n in t.column_names:
             c = t.column(n).combine_chunks()
@@ -446,14 +448,14 @@ class CoreCommons(object):
             elif pa.types.is_time(c.type) or pa.types.is_timestamp(c.type):
                 c = c.fill_null(0)
             elif pa.types.is_dictionary(c.type):
-                c = c.fill_null('')
-            elif pa.types.is_list(c.type):
+                c = c.fill_null('N/A')
+            elif inclusive and pa.types.is_list(c.type):
                 c = c.fill_null([])
-            elif pa.types.is_binary(c.type):
+            elif inclusive and pa.types.is_binary(c.type):
                 c = c.fill_null(b'')
-            elif pa.types.is_struct(c.type):
+            elif inclusive and pa.types.is_struct(c.type):
                 c = c.fill_null({})
-            elif pa.types.is_null(c.type):
+            else:
                 c = pa.array([False] * t.num_rows, pa.bool_())
             rtn_tbl = CoreCommons.table_append(rtn_tbl, pa.table([c], names=[n]))
         return rtn_tbl
