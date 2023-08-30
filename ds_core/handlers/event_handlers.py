@@ -50,18 +50,18 @@ class EventManager(object):
             rtn_dict[event] = tbl.to_pydict()
         return rtn_dict
 
-    def __str__(self):
+    def __repr__(self):
         rtn_str = ""
         for event, tbl in self.__event_catalog.items():
             schema = tbl.schema.to_string().replace('\n', '\n\t')
-            rtn_str += f"\nEvent: {event} ^({tbl.num_rows},{tbl.num_columns})>\n\t{schema},"
+            rtn_str += f"\nEvent: {event} ({tbl.num_rows},{tbl.num_columns})\n\t{schema},"
         return rtn_str
 
-    def __repr__(self):
-        rtn_str = "<EventBook: ["
+    def __str__(self):
+        rtn_str = "EventBook: ["
         for event, tbl in self.__event_catalog.items():
-            rtn_str += f"\n\t{event}:({tbl.num_rows},{tbl.num_columns})->{tbl.column_names},".replace(' ','')
-        return rtn_str + '\n]>'
+            rtn_str += f"\n\t{event}: ^({tbl.shape})> -> {tbl.column_names},"
+        return rtn_str + '\n]'
 
 
 class EventSourceHandler(AbstractSourceHandler):
