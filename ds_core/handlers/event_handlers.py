@@ -80,8 +80,12 @@ class EventSourceHandler(AbstractSourceHandler):
         self._changed_flag = True
 
     @property
-    def get_event_manager(self):
+    def event_manager(self):
         return self._event_manager
+
+    @property
+    def event_name(self):
+        return self._event_name
 
     def supported_types(self) -> list:
         """ The source types supported with this module"""
