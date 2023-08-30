@@ -61,20 +61,13 @@ class FeatureBuilderTest(unittest.TestCase):
         except OSError:
             pass
 
-    def test_event_manager_specials(self):
-        tbl = get_table()
-        em = EventManager().reset()
-        em.set('one', tbl)
-        em.set('two', tbl)
-        print(em.to_string(), em)
-
     def test_event_manager(self):
         tbl = get_table()
         em = EventManager().reset()
         # set
         em.set('task', tbl)
         self.assertTrue(em.is_event('task'))
-        self.assertTrue(EventManager().is_event('task'))
+        self.assertTrue(em.is_event('task'))
         self.assertEqual(['task'], em.event_names())
         self.assertTrue(tbl.equals(em.get('task')))
         # update
