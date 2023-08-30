@@ -61,6 +61,14 @@ class FeatureBuilderTest(unittest.TestCase):
         except OSError:
             pass
 
+
+    def test_enent_manager_string(self):
+        tbl = get_table()
+        em = EventManager().reset()
+        em.set('task1', tbl)
+        em.set('task2', None)
+        print(em)
+
     def test_event_manager(self):
         tbl = get_table()
         em = EventManager().reset()

@@ -46,20 +46,26 @@ class EventManager(object):
     def to_pydict(self):
         rtn_dict = {}
         for event, tbl in self.__event_catalog.items():
-            rtn_dict[event] = tbl.to_pydict()
+            rtn_dict[event] = {} if tbl is None else tbl.to_pydict()
         return rtn_dict
 
     def __repr__(self):
         rtn_str = ""
         for event, tbl in self.__event_catalog.items():
-            schema = tbl.schema.to_string().replace('\n', '\n\t')
-            rtn_str += f"\nEvent: {event} ({tbl.num_rows},{tbl.num_columns})\n\t{schema},"
+            if tbl is None:
+                rtn_str += f"\nEvent: {event} (0,0)\n\t-Empty-,"
+            else:
+                schema = tbl.schema.to_string().replace('\n', '\n\t')
+                rtn_str += f"\nEvent: {event} ({tbl.num_rows},{tbl.num_columns})\n\t{schema},"
         return rtn_str
 
     def __str__(self):
         rtn_str = "EventBooks: ["
         for event, tbl in self.__event_catalog.items():
-            rtn_str += f"\n\t{event}: ^({tbl.shape})> {tbl.column_names},"
+            if tbl is None:
+                rtn_str += f"\n\t{event}: ^(0, 0)> -Empty-,"
+            else:
+                rtn_str += f"\n\t{event}: ^{tbl.shape}> {tbl.column_names},"
         return rtn_str + '\n]'
 
 
