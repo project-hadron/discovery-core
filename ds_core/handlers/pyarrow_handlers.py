@@ -61,7 +61,7 @@ class PyarrowSourceHandler(AbstractSourceHandler):
                 document = f.read()
             for i in ['\n', '\t', ' ']:
                 document = document.replace(i, '')
-            document = document.replace('null', 'None')
+            document = document.replace('null', 'None').replace('true', 'True').replace('false', 'False')
             document = pa.Table.from_pylist(list(eval(document)))
             return CoreCommons.table_flatten(document)
         raise LookupError('The source format {} is not currently supported'.format(file_type))

@@ -61,7 +61,7 @@ class FeatureBuilderTest(unittest.TestCase):
 
     def test_event_manager(self):
         tbl = get_table()
-        em = EventManager()
+        em = EventManager().reset()
         # set
         em.set('task', tbl)
         self.assertTrue(em.is_event('task'))

@@ -45,6 +45,12 @@ class EventManager(object):
         with cls.__lock:
             del cls.__event_catalog[name]
 
+    @classmethod
+    def reset(cls):
+        with cls.__lock:
+            cls.__event_catalog = dict()
+        return cls
+
 
 class EventSourceHandler(AbstractSourceHandler):
     """ PyArrow read only Source Handler. """
@@ -62,12 +68,15 @@ class EventSourceHandler(AbstractSourceHandler):
 
     def load_canonical(self, drop:bool=None, **kwargs) -> pa.Table:
         """ returns the canonical dataset based on the connector contract. """
+        drop = drop if isinstance(drop, bool) else False
         self.reset_changed()
         em = EventManager()
-        rtn_tbl = em.get(self.event_name)
-        if isinstance(drop, bool) and drop:
-            em.delete(self.event_name)
-        return rtn_tbl
+        if em.is_event(self.event_name):
+            rtn_tbl = em.get(self.event_name)
+            if isinstance(drop, bool) and drop:
+                em.delete(self.event_name)
+            return rtn_tbl
+        raise ValueError(f"The event '{self.event_name}' does not exist")
 
     def exists(self) -> bool:
         """ Returns True is the file exists """
