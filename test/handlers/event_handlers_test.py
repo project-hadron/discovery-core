@@ -60,12 +60,13 @@ class FeatureBuilderTest(unittest.TestCase):
             shutil.rmtree('working')
         except OSError:
             pass
+
     def test_event_manager_specials(self):
         tbl = get_table()
         em = EventManager().reset()
         em.set('one', tbl)
         em.set('two', tbl)
-        print(em.__str__())
+        print(em.to_string(), em)
 
     def test_event_manager(self):
         tbl = get_table()

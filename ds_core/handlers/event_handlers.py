@@ -15,61 +15,51 @@ class EventManager(object):
     def __new__(cls):
         return super().__new__(cls)
 
-    @classmethod
-    def event_names(cls) -> list:
-        return list(cls.__event_catalog.keys())
+    def event_names(self) -> list:
+        return list(self.__event_catalog.keys())
 
-    @classmethod
-    def is_event(cls, name: str):
-        return name in cls.__event_catalog
+    def is_event(self, name: str):
+        return name in self.__event_catalog
 
-    @classmethod
-    def get(cls, name: str) -> pa.Table:
-        if name in cls.__event_catalog:
-            return cls.__event_catalog[name]
+    def get(self, name: str) -> pa.Table:
+        if name in self.__event_catalog:
+            return self.__event_catalog[name]
 
-    @classmethod
-    def set(cls, name: str, event: pa.Table):
-        if name in cls.__event_catalog:
+    def set(self, name: str, event: pa.Table):
+        if name in self.__event_catalog:
             raise ValueError(f"The event name '{name}' already exists in the event catalog and does not need to be added")
-        with cls.__lock:
-            cls.__event_catalog[name] = event
+        with self.__lock:
+            self.__event_catalog[name] = event
 
-    @classmethod
-    def update(cls, name: str, event: pa.Table):
-        with cls.__lock:
-            cls.__event_catalog.update({name: event})
+    def update(self, name: str, event: pa.Table):
+        with self.__lock:
+            self.__event_catalog.update({name: event})
 
-    @classmethod
-    def delete(cls, name: str):
-        with cls.__lock:
-            del cls.__event_catalog[name]
+    def delete(self, name: str):
+        with self.__lock:
+            del self.__event_catalog[name]
 
-    @classmethod
-    def reset(cls):
-        with cls.__lock:
-            cls.__event_catalog = dict()
-        return cls
+    def reset(self):
+        with self.__lock:
+            self.__event_catalog = {}
+        return self
 
-    @classmethod
-    def to_pydict(cls):
+    def to_pydict(self):
         rtn_dict = {}
-        for event, tbl in cls.__event_catalog.items():
+        for event, tbl in self.__event_catalog.items():
             rtn_dict[event] = tbl.to_pydict()
         return rtn_dict
 
-    @classmethod
-    def __str__(cls):
+    def __str__(self):
         rtn_str = ""
-        for event, tbl in cls.__event_catalog.items():
+        for event, tbl in self.__event_catalog.items():
             schema = tbl.schema.to_string().replace('\n', '\n\t')
             rtn_str += f"\nEvent: {event} ^({tbl.num_rows},{tbl.num_columns})>\n\t{schema},"
         return rtn_str
 
-    @classmethod
-    def __repr__(cls):
+    def __repr__(self):
         rtn_str = "<EventBook: ["
-        for event, tbl in cls.__event_catalog.items():
+        for event, tbl in self.__event_catalog.items():
             rtn_str += f"\n\t{event}:({tbl.num_rows},{tbl.num_columns})->{tbl.column_names},".replace(' ','')
         return rtn_str + '\n]>'
 
