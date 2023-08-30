@@ -3,6 +3,8 @@ import os
 from pathlib import Path
 import shutil
 from datetime import datetime
+from pprint import pprint
+
 import pandas as pd
 import pyarrow as pa
 import pyarrow.compute as pc
@@ -58,6 +60,12 @@ class FeatureBuilderTest(unittest.TestCase):
             shutil.rmtree('working')
         except OSError:
             pass
+    def test_event_manager_specials(self):
+        tbl = get_table()
+        em = EventManager().reset()
+        em.set('one', tbl)
+        em.set('two', tbl)
+        pprint(em.to_pydict())
 
     def test_event_manager(self):
         tbl = get_table()

@@ -51,6 +51,28 @@ class EventManager(object):
             cls.__event_catalog = dict()
         return cls
 
+    @classmethod
+    def to_pydict(cls):
+        rtn_dict = {}
+        for event, tbl in cls.__event_catalog.items():
+            rtn_dict[event] = tbl.to_pydict()
+        return rtn_dict
+
+    @classmethod
+    def __str__(cls):
+        rtn_str = ""
+        for event, tbl in cls.__event_catalog.items():
+            schema = tbl.schema.to_string().replace('\n', '\n\t')
+            rtn_str += f"\nEvent {event} Schema:\n\t{schema},"
+        return rtn_str
+
+    @classmethod
+    def __repr__(cls):
+        rtn_str = "<EventBook: ["
+        for event, tbl in cls.__event_catalog.items():
+            rtn_str += f"\n\t{event}=>{tbl.column_names},"
+        return rtn_str + '\n]>'
+
 
 class EventSourceHandler(AbstractSourceHandler):
     """ PyArrow read only Source Handler. """
