@@ -63,14 +63,14 @@ class EventManager(object):
         rtn_str = ""
         for event, tbl in cls.__event_catalog.items():
             schema = tbl.schema.to_string().replace('\n', '\n\t')
-            rtn_str += f"\nEvent {event} Schema:\n\t{schema},"
+            rtn_str += f"\nEvent: {event} ^({tbl.num_rows},{tbl.num_columns})>\n\t{schema},"
         return rtn_str
 
     @classmethod
     def __repr__(cls):
         rtn_str = "<EventBook: ["
         for event, tbl in cls.__event_catalog.items():
-            rtn_str += f"\n\t{event}=>{tbl.column_names},"
+            rtn_str += f"\n\t{event}:({tbl.num_rows},{tbl.num_columns})->{tbl.column_names},".replace(' ','')
         return rtn_str + '\n]>'
 
 

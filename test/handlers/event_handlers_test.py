@@ -65,7 +65,7 @@ class FeatureBuilderTest(unittest.TestCase):
         em = EventManager().reset()
         em.set('one', tbl)
         em.set('two', tbl)
-        pprint(em.to_pydict())
+        print(em.__str__())
 
     def test_event_manager(self):
         tbl = get_table()
