@@ -59,7 +59,7 @@ class IntentModelTest(unittest.TestCase):
     def test_run_intent_pipeline_levels(self):
         model = PyarrowIntentModel(property_manager=self.pm)
         data = {'A': [1,4,7], 'B': [4,5,9]}
-        model.to_remove(data=data, headers=['B'], inplace=False, intent_level=0)
+        model.to_select(data=data, headers=['B'], inplace=False, intent_level=0)
         model.auto_clean_header(data=data, case='lower', inplace=False, intent_level=1)
         result = model.run_intent_pipeline(canonical=data, inplace=False, intent_levels=0)
         self.assertDictEqual({'A': [1, 4, 7]}, result)

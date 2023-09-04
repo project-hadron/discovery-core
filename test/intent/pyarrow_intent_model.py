@@ -3,15 +3,16 @@ import threading
 import pyarrow as pa
 from ds_core.components.core_commons import CoreCommons
 from ds_core.intent.abstract_intent import AbstractIntentModel
-from ds_core.properties.abstract_properties import AbstractPropertyManager
+from test.properties.pyarrow_property_manager import PyarrowPropertyManager
 
 __author__ = 'Darryl Oatridge'
+
 
 
 class PyarrowIntentModel(AbstractIntentModel):
     """a pure python implementation of an Intent as a working example of the Intent Abstraction"""
 
-    def __init__(self, property_manager: AbstractPropertyManager, default_save_intent: bool=None,
+    def __init__(self, property_manager: PyarrowPropertyManager, default_save_intent: bool=None,
                  default_intent_level: bool=None, order_next_available: bool=None, default_replace_intent: bool=None):
         """initialisation of the Intent class.
 
@@ -74,7 +75,7 @@ class PyarrowIntentModel(AbstractIntentModel):
         if not inplace:
             return canonical
 
-    def to_remove(self, data: pa.Table, headers: [str, list]=None, drop: bool=False, d_type: [str, list]=None,
+    def to_select(self, data: pa.Table, headers: [str, list]=None, drop: bool=False, d_type: [str, list]=None,
                   exclude: bool=False, regex: [str, list]=None, re_ignore_case: bool=True, save_intent: bool=None,
                   intent_level: [int, str]=None, intent_order: int=None, replace_intent: bool=None,
                   remove_duplicates: bool=None) -> pa.Table:
@@ -103,6 +104,6 @@ class PyarrowIntentModel(AbstractIntentModel):
         self._set_intend_signature(self._intent_builder(method=inspect.currentframe().f_code.co_name, params=locals()),
                                    intent_level=intent_level, intent_order=intent_order, replace_intent=replace_intent,
                                    remove_duplicates=remove_duplicates, save_intent=save_intent)
-        selection = CoreCommons.filter_headers(data, headers=headers, drop=drop, regex=regex)
+        selection = CoreCommons.filter_columns(data, headers=headers, drop=drop, regex=regex)
 
-        return data
+        return selection

@@ -3,6 +3,9 @@ import re
 from abc import ABC, abstractmethod
 from datetime import datetime
 from typing import List, Any
+
+from ds_core.handlers.event_handlers import EventPersistHandler
+
 # handlers
 from ds_core.components.core_commons import CoreCommons
 from ds_core.properties.property_manager import PropertyManager
@@ -255,7 +258,10 @@ class AbstractPropertyManager(ABC):
         if isinstance(connector_contract, ConnectorContract):
             if connector_contract.module_name is None or connector_contract.handler is None:
                 raise ModuleNotFoundError("The module or handler for passed connector contract has not been set.")
-            connector_handler = HandlerFactory.instantiate(connector_contract)
+            if connector_contract.schema == 'event':
+                connector_handler = EventPersistHandler(connector_contract)
+            else:
+                connector_handler = HandlerFactory.instantiate(connector_contract)
         else:
             connector_handler = self.get_connector_handler(connector_name=self.CONNECTOR_PM_CONTRACT)
         self._base_pm.dump(handler=connector_handler, key=_key)
@@ -845,7 +851,10 @@ class AbstractPropertyManager(ABC):
         if connector_contract.module_name is None or connector_contract.handler is None:
             raise ModuleNotFoundError("The module or handler for '{}' has not been set.".format(connector_name))
         if self._connection_handler.get(connector_name) is None:
-            self._connection_handler[connector_name] = HandlerFactory.instantiate(connector_contract)
+            if connector_contract.schema == 'event':
+                self._connection_handler[connector_name] = EventPersistHandler(connector_contract)
+            else:
+                self._connection_handler[connector_name] = HandlerFactory.instantiate(connector_contract)
         return self._connection_handler.get(connector_name)
 
     def remove_connector_contract(self, connector_name: str):

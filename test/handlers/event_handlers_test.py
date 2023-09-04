@@ -9,9 +9,10 @@ import pandas as pd
 import pyarrow as pa
 import pyarrow.compute as pc
 
-from ds_core.handlers.abstract_handlers import ConnectorContract
+from ds_core.handlers.abstract_handlers import ConnectorContract, HandlerFactory
 from ds_core.handlers.event_handlers import EventSourceHandler, EventPersistHandler, EventManager
 from ds_core.properties.property_manager import PropertyManager
+from test.components.pyarrow_component import PyarrowComponent
 
 # Pandas setup
 pd.set_option('max_colwidth', 320)
@@ -86,6 +87,27 @@ class FeatureBuilderTest(unittest.TestCase):
         # delete
         em.delete('task')
         self.assertFalse(em.is_event('task'))
+
+    def test_connector_handler(self):
+        tbl = get_table()
+        uri = 'event://task/'
+        test1 = PyarrowComponent.from_env('test1', has_contract=False)
+        test1.set_persist_uri(uri=uri)
+        test1.save_canonical(test1.CONNECTOR_PERSIST, tbl)
+        result = test1.load_canonical(test1.CONNECTOR_PERSIST)
+        self.assertEqual((7, 6), result.shape)
+        test2 = PyarrowComponent.from_env('test2', has_contract=False)
+        test2.set_source_uri(test1.get_persist_uri())
+        result = test2.load_canonical(test2.CONNECTOR_SOURCE)
+        self.assertEqual((7, 6), result.shape)
+        self.assertTrue(tbl.equals(result))
+        result = test2.load_canonical(test2.CONNECTOR_SOURCE, drop=True)
+        self.assertEqual((7, 6), result.shape)
+        with self.assertRaises(ValueError) as context:
+            _ = test2.load_canonical(test2.CONNECTOR_SOURCE)
+        self.assertTrue("The event 'task' does not exist" in str(context.exception))
+
+
 
     def test_connector_contract(self):
         tbl = get_table()
