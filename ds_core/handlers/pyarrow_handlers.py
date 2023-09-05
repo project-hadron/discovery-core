@@ -52,11 +52,8 @@ class PyarrowSourceHandler(AbstractSourceHandler):
         if file_type.lower() in ['csv', 'gz', 'bz2']:
             parse_options = csv.ParseOptions(**load_params)
             return csv.read_csv(address, parse_options=parse_options)
-        # json
-        if file_type.lower() in ['json']:
-            return json.read_json(address, **load_params)
-        # complex nested
-        if file_type.lower() in ['complex', 'nested', 'txt']:
+        # json and complex nested
+        if file_type.lower() in ['complex', 'nested', 'txt', 'json']:
             with open(address) as f:
                 document = f.read()
             for i in ['\n', '\t', ' ']:
@@ -159,8 +156,8 @@ class PyarrowPersistHandler(PyarrowSourceHandler, AbstractPersistHandler):
         if file_type.lower() in ['csv', 'gz', 'bz2']:
             csv.write_csv(canonical, _address, **write_params)
             return True
-        # complex nested
-        if file_type.lower() in ['complex', 'nested', 'txt']:
+        # json and complex nested
+        if file_type.lower() in ['complex', 'nested', 'txt', 'json']:
             values = CoreCommons.table_nest(canonical)
             with open(_address, 'w') as f:
                 f.write(str(values))
