@@ -503,11 +503,12 @@ class AbstractComponent(ABC):
 
     def add_connector_from_template(self, connector_name: str, uri_file: str, template_name: str,  save: bool=None,
                                     **kwargs):
-        """ Adds a connector using settings from a template connector. By default a self.TEMPLATE_SOURCE and
+        """ Adds a connector using settings from a template connector. By default, a self.TEMPLATE_SOURCE and
         self.TEMPLATE_PERSIST are added at initialisation
 
         :param connector_name: the name or label to identify and reference the connector
         :param uri_file: the name of the file to append to the end of the default path
+        :param template_name: optional template name
         :param save: override of the default save action set at initialisation.
         :param kwargs: any kwargs to add to the default connector
         :return:

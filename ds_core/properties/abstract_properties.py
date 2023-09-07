@@ -425,7 +425,7 @@ class AbstractPropertyManager(ABC):
         book_name = book_name if isinstance(book_name, str) else self.PRIMARY_RUN_BOOK
         if self.is_key(self.join(self.KEY.run_book_key, book_name)):
             return self.get(self.join(self.KEY.run_book_key, book_name))
-        raise LookupError("The book name '{}', does not exist.".format(book_name))
+        return []
 
     def reset_run_books(self):
         """resets the run book, removing any existing run books"""
