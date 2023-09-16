@@ -188,17 +188,19 @@ class CommonsTest(unittest.TestCase):
     def test_table_cast(self):
         num = pa.array([1.0, 12.0, 5.0, None], pa.float64())
         date = pc.strptime(["2023-01-02 04:49:06", "2023-01-02 04:57:12", None, "2023-01-02 05:23:50"], format='%Y-%m-%d %H:%M:%S', unit='ns')
+        str_dt = pa.array(["2023-01-16", "2023-03-07", None, "2023-11-05"], pa.string())
         value = pa.array([None, '1.5', '3.2', '2.0'], pa.string())
         text = pa.array(["Blue", "Green", None, 'Red'], pa.string())
         bool1 = pa.array([1, 0, 1, None], pa.int64())
         bool2 = pa.array(['true', 'true', None, 'false'], pa.string())
         bool3 = pa.array([None, 'M', 'F', 'M'], pa.string())
-        tbl = pa.table([num, value, date, text, bool1, bool2, bool3],
-                       names=['num', 'value', 'date', 'text', 'bool1', 'bool2', 'bool3'])
+        tbl = pa.table([num, value, date, str_dt, text, bool1, bool2, bool3],
+                       names=['num', 'value', 'date', 'str_dt', 'text', 'bool1', 'bool2', 'bool3'])
         result = CoreCommons.table_cast(tbl).combine_chunks()
         control = pa.schema([('num', pa.int64()),
                              ('value', pa.float64()),
                              ('date', pa.timestamp('ns')),
+                             ('str_dt', pa.timestamp('ns')),
                              ('text', pa.dictionary(pa.int32(), pa.string())),
                              ('bool1', pa.bool_()),
                              ('bool2', pa.bool_()),
@@ -209,12 +211,25 @@ class CommonsTest(unittest.TestCase):
         control = pa.schema([('num', pa.int64()),
                              ('value', pa.float64()),
                              ('date', pa.timestamp('ns')),
+                             ('str_dt', pa.timestamp('ns')),
                              ('text', pa.string()),
                              ('bool1', pa.bool_()),
                              ('bool2', pa.bool_()),
                              ('bool3', pa.dictionary(pa.int32(), pa.string())),
                              ])
         self.assertEqual(control, result.schema)
+        result = CoreCommons.table_cast(tbl, cat_max=2, inc_cat=False, inc_bool=False).combine_chunks()
+        control = pa.schema([('num', pa.int64()),
+                             ('value', pa.float64()),
+                             ('date', pa.timestamp('ns')),
+                             ('str_dt', pa.timestamp('ns')),
+                             ('text', pa.string()),
+                             ('bool1', pa.int64()),
+                             ('bool2', pa.string()),
+                             ('bool3', pa.string()),
+                             ])
+        self.assertEqual(control, result.schema)
+
 
     def test_filter_headers(self):
         tbl = pq.read_table("../_data/sample_types.parquet")

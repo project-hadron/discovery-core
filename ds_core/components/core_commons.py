@@ -461,9 +461,11 @@ class CoreCommons(object):
         return rtn_tbl
 
     @staticmethod
-    def table_cast(t: pa.Table, cat_max: int=None):
-        """ attempt to cast a pyarrow table columns to the given type """
+    def table_cast(t: pa.Table, inc_cat: bool=None, cat_max: int=None, inc_bool: bool=None):
+        """ attempt to cast a pyarrow table columns to the given type bool and category can be excluded from cast"""
         cat_max = cat_max if isinstance(cat_max, int) else 40
+        inc_cat = inc_cat if isinstance(inc_cat, int) else True
+        inc_bool = inc_bool if isinstance(inc_bool, int) else True
         rtn_tbl = None
         for n in t.column_names:
             c = t.combine_chunks().column(n)
@@ -473,11 +475,11 @@ class CoreCommons(object):
                 c = CoreCommons.column_cast(c, pa.float64())
             if pa.types.is_floating(c.type):
                 c = CoreCommons.column_cast(c, pa.int64())
-            if pa.types.is_integer(c.type) and c.drop_null().unique().sort().equals(pa.array([0, 1])):
+            if inc_bool and pa.types.is_integer(c.type) and c.drop_null().unique().sort().equals(pa.array([0, 1])):
                 c = CoreCommons.column_cast(c, pa.bool_())
-            if pa.types.is_string(c.type) and pc.count_distinct(c.drop_null()).equals(pa.scalar(2)):
+            if inc_bool and pa.types.is_string(c.type) and pc.count_distinct(c.drop_null()).equals(pa.scalar(2)):
                 c = CoreCommons.column_cast(c, pa.bool_())
-            if pa.types.is_string(c.type) and 1 <= pc.count_distinct(c.drop_null()).as_py() <= cat_max:
+            if inc_cat and pa.types.is_string(c.type) and 1 <= pc.count_distinct(c.drop_null()).as_py() <= cat_max:
                 c = c.dictionary_encode()
             rtn_tbl = CoreCommons.table_append(rtn_tbl, pa.table([c], names=[n]))
         return rtn_tbl
