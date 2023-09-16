@@ -207,6 +207,17 @@ class CommonsTest(unittest.TestCase):
                              ('bool3', pa.dictionary(pa.int32(), pa.string())),
                              ])
         self.assertEqual(control, result.schema)
+        result = CoreCommons.table_cast(result, inc_cat=False).combine_chunks()
+        control = pa.schema([('num', pa.int64()),
+                             ('value', pa.float64()),
+                             ('date', pa.timestamp('ns')),
+                             ('str_dt', pa.timestamp('ns')),
+                             ('text', pa.string()),
+                             ('bool1', pa.bool_()),
+                             ('bool2', pa.bool_()),
+                             ('bool3', pa.string()),
+                             ])
+        self.assertEqual(control, result.schema)
         result = CoreCommons.table_cast(tbl, cat_max=2).combine_chunks()
         control = pa.schema([('num', pa.int64()),
                              ('value', pa.float64()),
@@ -229,7 +240,6 @@ class CommonsTest(unittest.TestCase):
                              ('bool3', pa.string()),
                              ])
         self.assertEqual(control, result.schema)
-
 
     def test_filter_headers(self):
         tbl = pq.read_table("../_data/sample_types.parquet")

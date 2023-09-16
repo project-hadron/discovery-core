@@ -461,16 +461,34 @@ class CoreCommons(object):
         return rtn_tbl
 
     @staticmethod
-    def table_cast(t: pa.Table, inc_cat: bool=None, cat_max: int=None, inc_bool: bool=None):
-        """ attempt to cast a pyarrow table columns to the given type bool and category can be excluded from cast"""
+    def table_cast(t: pa.Table, inc_cat: bool=None, cat_max: int=None, inc_bool: bool=None, inc_time:bool=None,
+                   units: str=None, tz: str=None):
+        """ attempt to cast a pyarrow table columns to an appropriate type
+
+        :param t: a pa.Table to cast
+        :param inc_cat: if to cast categories
+        :param cat_max: the max number of unique categories to consider
+        :param inc_bool: if to cast booleans
+        :param inc_time: if to cast time and timestamp
+        :param units: the units to cast a timestamp to
+        :param tz: the timezone to cast a timestamp to
+        """
         cat_max = cat_max if isinstance(cat_max, int) else 40
         inc_cat = inc_cat if isinstance(inc_cat, int) else True
         inc_bool = inc_bool if isinstance(inc_bool, int) else True
+        inc_time = inc_time if isinstance(inc_time, int) else True
+        units = units if isinstance(units, str) and units in ['s', 'ms', 'us', 'ns'] else 'ns'
         rtn_tbl = None
         for n in t.column_names:
-            c = t.combine_chunks().column(n)
-            if pa.types.is_string(c.type):
-                c = CoreCommons.column_cast(c, pa.timestamp('ns'))
+            c = t.column(n).combine_chunks()
+            if not inc_cat and pa.types.is_dictionary(c.type):
+                c = c.dictionary_decode()
+            elif not inc_bool and pa.types.is_boolean(c.type):
+                c = c.cast(pa.int8())
+            elif not inc_time and (pa.types.is_time(c.type) or pa.types.is_timestamp(c.type)):
+                c = c.cast(pa.string())
+            if inc_time and pa.types.is_string(c.type):
+                c = CoreCommons.column_cast(c, pa.timestamp(unit=units, tz=tz))
             if pa.types.is_string(c.type):
                 c = CoreCommons.column_cast(c, pa.float64())
             if pa.types.is_floating(c.type):
