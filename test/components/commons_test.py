@@ -314,6 +314,16 @@ class CommonsTest(unittest.TestCase):
         self.assertEqual(0.0, result[1] + result[3])
         self.assertEqual(0.0, result[0] + result[4])
 
+    def test_list_normalize_robust(self):
+        seq = [100, 75, 50, 25, 0]
+        result = CoreCommons.list_normalize_robust(seq=seq)
+        self.assertEqual(result, [1.5, 1.0, 0.5, 0.0, -0.5])
+        # outlier
+        seq = [1,1,2,100,1,2,1,1,1]
+        result = CoreCommons.list_normalize_robust(seq=seq)
+        self.assertEqual(result, [0.0, 0.0, 1.0, 99.0, 0.0, 1.0, 0.0, 0.0, 0.0])
+
+
     def test_list_normalize(self):
         seq = [100, 75, 50, 25, 0]
         a = 0

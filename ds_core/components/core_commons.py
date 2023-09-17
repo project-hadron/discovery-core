@@ -216,7 +216,7 @@ class CoreCommons(object):
 
     @staticmethod
     def list_standardize(seq: list, precision: int=None) -> list:
-        """standardise a numeric list"""
+        """Z-Score Standardization: Standardise a numeric list to have a mean of 0 and a standard deviation of 1."""
         if not isinstance(seq, list):
             raise ValueError("The sequence must be of type 'list'")
         if not all(isinstance(x, (int, float)) for x in seq):
@@ -229,7 +229,7 @@ class CoreCommons(object):
 
     @staticmethod
     def list_normalize(seq: list, a: [int, float], b: [int, float], precision: int=None) -> list:
-        """Normalises a numeric list between a and b where min(x) and max(x) will normalise to a and b"""
+        """Min-Max Scaling: Normalises a numeric list between a and b where min(x) and max(x)"""
         if not isinstance(seq, list):
             raise ValueError("The sequence must be of type 'list'")
         if not all(isinstance(x, (int, float)) for x in seq):
@@ -243,9 +243,20 @@ class CoreCommons(object):
         return [round((n_range * ((x - seq_min) / seq_range)) + a, precision) for x in seq]
 
     @staticmethod
+    def list_normalize_robust(seq: list, precision: int=None):
+        """Robust Scaling: Normalises a numeric list using the interquartile range (.25, .75) to scale the data"""
+        if not isinstance(seq, list):
+            raise ValueError("The sequence must be of type 'list'")
+        if not all(isinstance(x, (int, float)) for x in seq):
+            raise ValueError("The sequence must be a list of numeric values")
+        precision = precision if isinstance(precision, int) else 5
+        q1, q3 = pc.quantile(seq, [0.25, 0.75])
+        return [round((x - q1.as_py())/(q3.as_py() - q1.as_py()), precision) for x in seq]
+
+    @staticmethod
     def filter_headers(data: pa.Table, headers: [str, list]=None, d_types: list=None, regex: [str, list]=None,
                        drop: bool=None) -> list:
-        """ returns a list of headers based on the filter criteria. The order of filter is d_type, headers then regex.
+        """ returns a list of headers based on the filter criteria.as_py) The order of filter is d_type, headers then regex.
 
         :param data: the Canonical data to get the column headers from
         :param d_types: (optional) a list of pyarrow DataTypes of the columns headers
