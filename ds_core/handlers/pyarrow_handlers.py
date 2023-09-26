@@ -5,7 +5,6 @@ import pyarrow.parquet as pq
 import pyarrow.feather as feather
 from ds_core.components.core_commons import CoreCommons
 from pyarrow import csv
-from pyarrow import json
 
 from ds_core.handlers.abstract_handlers import AbstractSourceHandler, AbstractPersistHandler
 from ds_core.handlers.abstract_handlers import ConnectorContract, HandlerFactory
