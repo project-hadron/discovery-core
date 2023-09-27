@@ -36,10 +36,10 @@ class FeatureBuilderTest(unittest.TestCase):
             if key.startswith('HADRON'):
                 del os.environ[key]
         # Local Domain Contract
-        os.environ['HADRON_PM_PATH'] = os.path.join('working', 'contracts')
-        os.environ['HADRON_PM_TYPE'] = 'parquet'
+        os.environ['HADRON_PM_PATH'] = "event://pm_story"
+        os.environ['HADRON_PM_TYPE'] = 'json'
         # Local Connectivity
-        os.environ['HADRON_DEFAULT_PATH'] = Path('working/data').as_posix()
+        os.environ['HADRON_DEFAULT_PATH'] = "event://data"
         # Specialist Component
         try:
             os.makedirs(os.environ['HADRON_PM_PATH'])
@@ -105,8 +105,6 @@ class FeatureBuilderTest(unittest.TestCase):
         with self.assertRaises(ValueError) as context:
             _ = test2.load_canonical(test2.CONNECTOR_SOURCE)
         self.assertTrue("The event 'task' does not exist" in str(context.exception))
-
-
 
     def test_connector_contract(self):
         tbl = get_table()

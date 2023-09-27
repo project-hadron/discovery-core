@@ -25,9 +25,9 @@ class ControlPropertyManager(AbstractPropertyManager):
 
 class ControlComponent(AbstractComponent):
 
-    DEFAULT_MODULE = 'ds_core.handlers.pyarrow_handlers'
-    DEFAULT_SOURCE_HANDLER = 'PyarrowSourceHandler'
-    DEFAULT_PERSIST_HANDLER = 'PyarrowPersistHandler'
+    DEFAULT_MODULE = 'ds_core.handlers.event_handlers'
+    DEFAULT_SOURCE_HANDLER = 'EventSourceHandler'
+    DEFAULT_PERSIST_HANDLER = 'EventPersistHandler'
 
     def __init__(self, property_manager: ControlPropertyManager, intent_model: PyarrowIntentModel,
                  default_save=None, reset_templates: bool = None, template_path: str=None, template_module: str=None,
@@ -67,8 +67,8 @@ class AbstractComponentTest(unittest.TestCase):
         for var in environ():
             if var in os.environ:
                 del os.environ[var]
-        os.environ['HADRON_PM_PATH'] = os.path.join(os.environ['PWD'], 'work')
-        os.environ['HADRON_PM_TYPE'] = 'parquet'
+        os.environ['HADRON_PM_PATH'] = "event://pm_story"
+        os.environ['HADRON_PM_TYPE'] = 'json'
         os.environ['HADRON_USERNAME'] = 'TestUser'
         os.environ['HADRON_DEFAULT_PATH'] = os.path.join(os.environ['PWD'], 'work')
         PropertyManager._remove_all()
@@ -217,15 +217,15 @@ class AbstractComponentTest(unittest.TestCase):
         self.assertIn(os.environ.get('HADRON_PM_PATH') + '/hadron_pm_control_task.parquet', report.get('uri'))
 
     def test_PM_from_env(self):
-        os.environ['HADRON_PM_PATH'] = "work/test/contracts?A=24&B=fred"
-        os.environ['HADRON_PM_TYPE'] = 'parquet'
-        os.environ['HADRON_PM_MODULE'] = 'ds_core.handlers.pyarrow_handlers'
-        os.environ['HADRON_PM_HANDLER'] = 'PyarrowPersistHandler'
+        os.environ['HADRON_PM_PATH'] = "event://pm_story"
+        os.environ['HADRON_PM_TYPE'] = 'json'
+        os.environ['HADRON_PM_MODULE'] = 'ds_core.handlers.event_handlers'
+        os.environ['HADRON_PM_HANDLER'] = 'EventPersistHandler'
         instance = ControlComponent.from_env('task', has_contract=False, encoding='Latin1')
         result = instance.pm.get_connector_contract(instance.pm.CONNECTOR_PM_CONTRACT)
-        self.assertEqual('work/test/contracts/hadron_pm_control_task.parquet', result.uri)
-        self.assertEqual('PyarrowPersistHandler', result.handler)
-        self.assertEqual('ds_core.handlers.pyarrow_handlers', result.module_name)
+        self.assertEqual('work/test/contracts/hadron_pm_control_task.json', result.uri)
+        self.assertEqual('EventPersistHandler', result.handler)
+        self.assertEqual('ds_core.handlers.event_handlers', result.module_name)
         self.assertDictEqual({'A': '24', 'B': 'fred', 'encoding': 'Latin1'}, result.kwargs)
 
     def test_DEFAULT_from_env(self):
@@ -261,14 +261,14 @@ class AbstractComponentTest(unittest.TestCase):
         self.assertDictEqual({}, persist.kwargs)
 
     def test_from_environ(self):
-        os.environ['HADRON_PM_PATH'] = "work/${BUCKET}/${TASK}"
+        os.environ['HADRON_PM_PATH'] = "${BUCKET}://${TASK}"
         os.environ['HADRON_PM_TYPE'] = 'parquet'
         os.environ['HADRON_PM_MODULE'] = '${MODULE}'
         os.environ['HADRON_PM_HANDLER'] = '${HANDLER}'
         os.environ['BUCKET'] = 'contracts'
         os.environ['TASK'] = 'task'
-        os.environ['MODULE'] = 'ds_core.handlers.pyarrow_handlers'
-        os.environ['HANDLER'] = 'PyarrowPersistHandler'
+        os.environ['MODULE'] = 'ds_core.handlers.events_handlers'
+        os.environ['HANDLER'] = 'EventPersistHandler'
         instance = ControlComponent.from_env('task', has_contract=False)
         cc = instance.pm.get_connector_contract(connector_name=instance.pm.CONNECTOR_PM_CONTRACT)
         self.assertTrue(cc.uri.startswith('work/contracts/task/'))

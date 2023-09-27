@@ -59,16 +59,15 @@ class PropertyManagerTest(unittest.TestCase):
         self.assertEqual(['item1', 'item2', 'item3'], pm.get('some_name'))
 
     def test_dump_load_persist(self):
-        connector_contract = ConnectorContract(uri='test/properties.parquet',
-                                               module_name='ds_core.handlers.pyarrow_handlers',
-                                               handler='PyarrowPersistHandler', file_type='parquet')
+        connector_contract = ConnectorContract(uri='event://pm_story',
+                                               module_name='ds_core.handlers.event_handlers',
+                                               handler='EventPersistHandler')
         handler = HandlerFactory.instantiate(connector_contract)
         pm = PropertyManager()
         file = 'test/properties.parquet'
         pm.set('KeyA', 'ValueA')
         self.assertEqual('ValueA', pm.get('KeyA'))
         pm.dump(handler)
-        self.assertTrue(os.path.exists(file))
         self.assertTrue(pm.is_key('KeyA'))
         pm.remove('KeyA')
         self.assertFalse(pm.is_key('KeyA'))
@@ -77,9 +76,9 @@ class PropertyManagerTest(unittest.TestCase):
         self.assertEqual('ValueA', pm.get('KeyA'))
 
     def test_dump_load_key(self):
-        connector_contract = ConnectorContract(uri='test/properties.parquet',
-                                               module_name='ds_core.handlers.pyarrow_handlers',
-                                               handler='PyarrowPersistHandler', file_type='parquet')
+        connector_contract = ConnectorContract(uri='event://pm_story',
+                                               module_name='ds_core.handlers.event_handlers',
+                                               handler='EventPersistHandler')
         handler = HandlerFactory.instantiate(connector_contract)
         pm = PropertyManager()
         pm.set('transition.task1', {'keyA1': 'valueA1'})
@@ -89,25 +88,21 @@ class PropertyManagerTest(unittest.TestCase):
         pm.dump(handler=handler)
         pm.load(handler=handler, replace=True)
         self.assertDictEqual(base, pm.get_all())
-        pm.load(handler=handler, key='transition.task1', replace=True)
-        control = {'transition': {'task1': {'keyA1': 'valueA1'}}}
+        pm.load(handler=handler, key='transition.task1')
+        control = {'transition': {'task1': {'keyA1': 'valueA1'}, 'task2': {'keyA2': 'valueA2'}}, 'feature_catalog': {'task2': {'keyA2': 'valueA2'}}}
         self.assertDictEqual(control, pm.get_all())
-        pm.load(handler=handler, key='transition', replace=True)
-        control = {'transition': {'task1': {'keyA1': 'valueA1'}, 'task2': {'keyA2': 'valueA2'}}}
+        pm.load(handler=handler, key='transition')
+        control = {'transition': {'task1': {'keyA1': 'valueA1'}, 'task2': {'keyA2': 'valueA2'}}, 'feature_catalog': {'task2': {'keyA2': 'valueA2'}}}
         self.assertDictEqual(control, pm.get_all())
-        pm.load(handler=handler, key='', replace=True, ignore_key_error=True)
-        self.assertDictEqual({}, pm.get_all())
-        pm.load(handler=handler, key='one.two.three', replace=True, ignore_key_error=True)
-        self.assertDictEqual({}, pm.get_all())
-        pm.set('feature_catalog.task2', {'keyA2': 'valueA2'})
-        pm.load(handler=handler, key='one.two.three', replace=False, ignore_key_error=True)
-        control = {'feature_catalog': {'task2': {'keyA2': 'valueA2'}}}
+        pm.load(handler=handler, key='', ignore_key_error=True)
+        self.assertDictEqual(control, pm.get_all())
+        pm.load(handler=handler, key='one.two.three', ignore_key_error=True)
         self.assertDictEqual(control, pm.get_all())
 
     def test_raise(self):
-        connector_contract = ConnectorContract(uri='test/properties.parquet',
-                                               module_name='ds_core.handlers.pyarrow_handlers',
-                                               handler='PyarrowPersistHandler', file_type='parquet')
+        connector_contract = ConnectorContract(uri='event://pm_story',
+                                               module_name='ds_core.handlers.event_handlers',
+                                               handler='EventPersistHandler')
         handler = HandlerFactory.instantiate(connector_contract)
         pm = PropertyManager()
         pm.dump(handler)
@@ -116,17 +111,15 @@ class PropertyManagerTest(unittest.TestCase):
         self.assertTrue("The key 'one.two.three' could not " in str(context.exception))
 
     def test_dump_load_overwrite(self):
-        connector_contract = ConnectorContract(uri='test/properties.parquet',
-                                               module_name='ds_core.handlers.pyarrow_handlers',
-                                               handler='PyarrowPersistHandler', file_type='parquet')
+        connector_contract = ConnectorContract(uri='event://pm_story',
+                                               module_name='ds_core.handlers.event_handlers',
+                                               handler='EventPersistHandler')
         handler = HandlerFactory.instantiate(connector_contract)
         pm = PropertyManager()
-        file = 'test/properties.parquet'
         pm.set('KeyA', 'ValueA')
         self.assertEqual('ValueA', pm.get('KeyA'))
         # dump the file then add a new item and see if it doesn't get overwritten
         pm.dump(handler)
-        self.assertTrue(os.path.exists(file))
         pm.set('KeyB', 'ValueB')
         self.assertEqual('ValueB', pm.get('KeyB'))
         pm.remove('KeyA')

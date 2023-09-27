@@ -179,16 +179,13 @@ class PropertyManager(object):
         """
         if handler is None or not isinstance(handler, AbstractPersistHandler):
             raise ValueError("The handler must be a concrete implementation of AbstractPersistHandler")
-        # extract the data
-        tbl = handler.load_canonical()
-        arr = tbl.column('meta').combine_chunks()
-        cfg_dict = ast.literal_eval(arr.to_pylist()[0])
-        # construct the dict
+        # if not _path.exists() or not _path.is_file():
+        cfg_dict = handler.load_canonical()
         if replace:
             with cls.__lock:
                 cls.__properties.clear()
         # Don't copy over the file meta data
-        _ = cfg_dict.pop('config_meta')
+        _ = cfg_dict.pop('config_meta', None)
         if isinstance(key, str):
             subset = cfg_dict
             for k in key.split('.'):
@@ -250,8 +247,7 @@ class PropertyManager(object):
             data['config_meta'] = cls.get('config_meta')
 
         # now build the canonical
-        a_meta = pa.array([str(data)], pa.string())
-        handler.persist_canonical(pa.table([a_meta], names=['meta']))
+        handler.persist_canonical(data)
         return
 
     @staticmethod

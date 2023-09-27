@@ -32,7 +32,7 @@ class AbstractComponent(ABC):
                      template_source_handler: str=None, template_persist_handler: str=None, align_connectors: bool=None,
                      default_save_intent: bool=None, default_intent_level: bool=None, order_next_available: bool=None,
                      default_replace_intent: bool=None, has_contract: bool=None):
-            pm_file_type = pm_file_type if isinstance(pm_file_type, str) else 'parquet'
+            pm_file_type = pm_file_type if isinstance(pm_file_type, str) else 'json'
             pm_module = pm_module if isinstance(pm_module, str) else cls.DEFAULT_MODULE
             pm_handler = pm_handler if isinstance(pm_handler, str) else cls.DEFAULT_PERSIST_HANDLER
             _pm = ExamplePropertyManager(task_name=task_name, username=username)
@@ -190,7 +190,7 @@ class AbstractComponent(ABC):
         if not isinstance(uri_pm_path, str) or len(uri_pm_path) == 0:
             raise ValueError("The URI must be a valid string representation of a URI")
         _schema, _netloc, _path = ConnectorContract.parse_address_elements(uri=uri_pm_path)
-        _file_type = pm_file_type if isinstance(pm_file_type, str) else 'parquet'
+        _file_type = pm_file_type if isinstance(pm_file_type, str) else 'json'
         has_contract = has_contract if isinstance(has_contract, bool) else True
         default_save = default_save if isinstance(default_save, bool) else True
         if isinstance(pm_module, str) and isinstance(pm_handler, str):
@@ -293,7 +293,7 @@ class AbstractComponent(ABC):
         :param kwargs: to pass to the property ConnectorContract as its kwargs
         :return: the initialised class instance
         """
-        pm_file_type = os.environ.get('HADRON_PM_TYPE', 'parquet')
+        pm_file_type = os.environ.get('HADRON_PM_TYPE', 'json')
         pm_uri = os.environ.get('HADRON_PM_PATH', None)
         if isinstance(uri_pm_repo, str):
             pm_repo = uri_pm_repo

@@ -14,8 +14,8 @@ from ds_core.properties.property_manager import PropertyManager
 class CommonsTest(unittest.TestCase):
 
     def setUp(self):
-        os.environ['HADRON_PM_PATH'] = os.path.join('work', 'config')
-        os.environ['HADRON_DEFAULT_PATH'] = os.path.join('work', 'data')
+        os.environ['HADRON_PM_PATH'] = "event://pm_story"
+        os.environ['HADRON_DEFAULT_PATH'] = "event://data"
         try:
             os.makedirs(os.environ['HADRON_PM_PATH'])
             os.makedirs(os.environ['HADRON_DEFAULT_PATH'])
