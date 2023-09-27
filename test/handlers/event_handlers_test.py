@@ -3,13 +3,12 @@ import os
 from pathlib import Path
 import shutil
 from datetime import datetime
-from pprint import pprint
 
 import pandas as pd
 import pyarrow as pa
 import pyarrow.compute as pc
 
-from ds_core.handlers.abstract_handlers import ConnectorContract, HandlerFactory
+from ds_core.handlers.abstract_handlers import ConnectorContract
 from ds_core.handlers.event_handlers import EventSourceHandler, EventPersistHandler, EventManager
 from ds_core.properties.property_manager import PropertyManager
 from test.components.pyarrow_component import PyarrowComponent
