@@ -61,7 +61,7 @@ class AbstractComponent(ABC):
     REPORT_RUNBOOK = 'runbook'
     REPORT_ENVIRON = 'environ'
     # default connectors module and handlers
-    DEFAULT_MODULE = 'ds_core.handlers.pyarrow_handlers'
+    DEFAULT_MODULE = 'ds_capability.handlers.pyarrow_handlers'
     DEFAULT_SOURCE_HANDLER = 'PyarrowSourceHandler'
     DEFAULT_PERSIST_HANDLER = 'PyarrowPersistHandler'
 
