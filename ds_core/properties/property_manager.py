@@ -180,7 +180,8 @@ class PropertyManager(object):
         if handler is None or not isinstance(handler, AbstractPersistHandler):
             raise ValueError("The handler must be a concrete implementation of AbstractPersistHandler")
         # if not _path.exists() or not _path.is_file():
-        cfg_dict = handler.load_canonical()
+        tbl = handler.load_canonical()
+        cfg_dict = tbl.to_pylist()[0]
         if replace:
             with cls.__lock:
                 cls.__properties.clear()
@@ -247,6 +248,7 @@ class PropertyManager(object):
             data['config_meta'] = cls.get('config_meta')
 
         # now build the canonical
+        data = pa.Table.from_pylist([data])
         handler.persist_canonical(data)
         return
 

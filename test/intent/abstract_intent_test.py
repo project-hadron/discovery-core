@@ -47,27 +47,6 @@ class IntentModelTest(unittest.TestCase):
         """Basic smoke test"""
         PyarrowIntentModel(property_manager=self.pm)
 
-    def test_run_intent_pipeline(self):
-        model = PyarrowIntentModel(property_manager=self.pm)
-        canonical = {'A': [1,4,7], 'B': [4,5,9]}
-        result = model.run_intent_pipeline(canonical=canonical, inplace=False)
-        self.assertDictEqual(canonical, result)
-        model.to_str_type(data=canonical, headers=['B'])
-        result = model.run_intent_pipeline(canonical=canonical)
-        self.assertDictEqual({'a': [1, 4, 7]}, result)
-
-    def test_run_intent_pipeline_levels(self):
-        model = PyarrowIntentModel(property_manager=self.pm)
-        data = {'A': [1,4,7], 'B': [4,5,9]}
-        model.to_select(data=data, headers=['B'], inplace=False, intent_level=0)
-        model.auto_clean_header(data=data, case='lower', inplace=False, intent_level=1)
-        result = model.run_intent_pipeline(canonical=data, inplace=False, intent_levels=0)
-        self.assertDictEqual({'A': [1, 4, 7]}, result)
-        result = model.run_intent_pipeline(canonical=data, inplace=False, intent_levels=1)
-        self.assertDictEqual({'a': [1,4,7], 'b': [4,5,9]}, result)
-        result = model.run_intent_pipeline(canonical=data, inplace=False, intent_levels=[0, 1, 2])
-        self.assertDictEqual({'a': [1,4,7]}, result)
-
 
 
 

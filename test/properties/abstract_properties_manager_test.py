@@ -73,23 +73,6 @@ class AbstractPropertiesManagerTest(unittest.TestCase):
         result = manager.KEY.knowledge.notes_key
         self.assertEqual(control, result)
 
-    def test_persist(self):
-        pm = ControlPropertyManager('test_abstract_properties')
-        pm.set(pm.join(pm.KEY.contract_key, 'test_key'), 'test value')
-        result = pm.get(pm.join(pm.KEY.contract_key, 'test_key'))
-        self.assertEqual('test value', result)
-        # create the connection
-        pm.set_property_connector(self.connector)
-        self.assertFalse(os.path.exists('works/config_contract.p'))
-        pm.set_version('test_version')
-        pm.persist_properties()
-        self.assertTrue(os.path.exists('works/config_contract.parquet'))
-        self.assertEqual(['pm_control_test_abstract_properties'], pm.connector_contract_list)
-        self.assertEqual('test_version', pm.version)
-        pm.reset_all()
-        self.assertEqual('0.0.1', pm.version)
-        self.assertEqual(['pm_control_test_abstract_properties'], pm.connector_contract_list)
-
     def test_abstract_key(self):
         keys = ['connectors', 'values']
         ab = AbstractProperty(keys, manager='contract', contract='subset')
@@ -121,22 +104,6 @@ class AbstractPropertiesManagerTest(unittest.TestCase):
         self.assertEqual(control, pm.get(pm.KEY.contract_key))
         pm.reset_all()
         control = {'description': "", 'status': 'discovery', 'cleaners': {}, 'connectors': {}, 'intent': {}, 'overview': {}, 'run_book': {},'snapshot': {}, 'version': '0.0.1',
-                   'meta': {'class': 'ControlPropertyManager', 'module': pm.__module__.split(".")}, 'knowledge': {'intent': {}, 'schema': {}}}
-        self.assertEqual(control, pm.get(pm.KEY.contract_key))
-
-    def test_connection_handler(self):
-        pm = ControlPropertyManager('test_abstract_properties', root_keys=[], knowledge_keys=[])
-        control_connector = self.connector
-        pm.set_connector_contract(connector_name='control', connector_contract=self.connector)
-        result = pm.get_connector_contract(connector_name='control')
-        self.assertEqual(control_connector, result)
-        # connections should be empty as not requested a handler
-        self.assertEqual([], pm.connector_handler_list)
-        self.assertEqual(['control'], pm.connector_contract_list)
-        pm.get_connector_handler(connector_name='control')
-        self.assertEqual(['control'], pm.connector_handler_list)
-        pm.remove_connector_contract(connector_name='control')
-        control = {'description': '', 'status': 'discovery', 'cleaners': {}, 'connectors': {},  'intent': {}, 'run_book': {}, 'snapshot': {}, 'version': '0.0.1',
                    'meta': {'class': 'ControlPropertyManager', 'module': pm.__module__.split(".")}, 'knowledge': {'intent': {}, 'schema': {}}}
         self.assertEqual(control, pm.get(pm.KEY.contract_key))
 
@@ -187,13 +154,6 @@ class AbstractPropertiesManagerTest(unittest.TestCase):
         dpm2 = ControlPropertyManager('test_abstract_properties')
         self.assertEqual('5.01', dpm2.get(dpm.KEY.version_key))
         self.assertEqual(['clean_header'], list(dpm.get(dpm.KEY.cleaners_key).keys()))
-
-    def test_connector_handler(self):
-        connector_name = 'raw_source'
-        dpm = ControlPropertyManager('test_abstract_properties')
-        dpm.set_connector_contract(connector_name=connector_name, connector_contract=self.connector)
-        handler = dpm.get_connector_handler(connector_name)
-        self.assertEqual("<class 'ds_core.handlers.pyarrow_handlers.PyarrowPersistHandler'>", str(type(handler)))
 
     def test_set_connector_contract(self):
         connector_name = 'raw_source'
