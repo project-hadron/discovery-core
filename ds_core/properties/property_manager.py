@@ -5,6 +5,7 @@ from datetime import datetime
 from typing import Any
 import pyarrow as pa
 import ds_core
+from ds_core.components.core_commons import CoreCommons
 from ds_core.handlers.abstract_handlers import AbstractPersistHandler
 from ds_core.properties.decorator_patterns import singleton
 
@@ -181,7 +182,7 @@ class PropertyManager(object):
             raise ValueError("The handler must be a concrete implementation of AbstractPersistHandler")
         # if not _path.exists() or not _path.is_file():
         tbl = handler.load_canonical()
-        cfg_dict = tbl.to_pylist()[0]
+        cfg_dict = CoreCommons.table_nest(tbl)[0]
         if replace:
             with cls.__lock:
                 cls.__properties.clear()
@@ -249,6 +250,7 @@ class PropertyManager(object):
 
         # now build the canonical
         data = pa.Table.from_pylist([data])
+        data = CoreCommons.table_flatten(data)
         handler.persist_canonical(data)
         return
 
