@@ -44,7 +44,7 @@ class ControlComponent(AbstractComponent):
                  template_source_handler: str=None, template_persist_handler: str=None, align_connectors: bool=None,
                  default_save_intent: bool=None, default_intent_level: bool=None, order_next_available: bool=None,
                  default_replace_intent: bool=None, has_contract: bool=None):
-        pm_file_type = pm_file_type if isinstance(pm_file_type, str) else 'parquet'
+        pm_file_type = pm_file_type if isinstance(pm_file_type, str) else 'json'
         pm_module = pm_module if isinstance(pm_module, str) else 'ds_core.handlers.pyarrow_handlers'
         pm_handler = pm_handler if isinstance(pm_handler, str) else 'PyarrowPersistHandler'
         _pm = ControlPropertyManager(task_name=task_name, creator=creator)
@@ -262,7 +262,7 @@ class AbstractComponentTest(unittest.TestCase):
 
     def test_from_environ(self):
         os.environ['HADRON_PM_PATH'] = "${BUCKET}://${TASK}"
-        os.environ['HADRON_PM_TYPE'] = 'parquet'
+        os.environ['HADRON_PM_TYPE'] = 'json'
         os.environ['HADRON_PM_MODULE'] = '${MODULE}'
         os.environ['HADRON_PM_HANDLER'] = '${HANDLER}'
         os.environ['BUCKET'] = 'contracts'

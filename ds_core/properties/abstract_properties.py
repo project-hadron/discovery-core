@@ -910,11 +910,11 @@ class AbstractPropertyManager(ABC):
         """ returns the file pattern for the property manager
 
         :param project: (optional) an alternative project string that replaces 'hadron'
-        :param file_type: (optional) an alternative file extension to the default 'parquet' format
+        :param file_type: (optional) an alternative file extension to the default 'json' format
         :return:
         """
         project = project if isinstance(project, str) else 'hadron'
-        file_type = file_type if isinstance(file_type, str) else 'parquet'
+        file_type = file_type if isinstance(file_type, str) else 'json'
         return f"{project}_pm_{self.manager_name()}_{self.task_name}.{file_type}"
 
     def file_pattern(self, name: str, project: str=None, path: [str, list]=None, prefix: str=None, suffix: str=None,
@@ -926,7 +926,7 @@ class AbstractPropertyManager(ABC):
         :param path: (optional) a file path that precedes the prefix and file pattern. uses os.path.join so takes a list
         :param prefix: (optional) a prefix to put at the front of the file pattern to replace the default
         :param suffix: (optional) a suffix to put at the end of the file pattern and extension
-        :param file_type: (optional) an alternative file extension to the default 'parquet' format
+        :param file_type: (optional) an alternative file extension to the default 'json' format
         :param versioned: (optional) if the component version should be included as part of the pattern
         :param stamped: (optional) A string of the timestamp options ['days', 'hours', 'minutes', 'seconds', 'ns']
         :return: a pattern unique to this component task connector
@@ -934,7 +934,7 @@ class AbstractPropertyManager(ABC):
         project = project.lower() if isinstance(project, str) else 'hadron'
         prefix = prefix if isinstance(prefix, str) else f"{project}_{self.manager_name()}_{self.task_name}_"
         suffix = suffix if isinstance(suffix, str) else ''
-        file_type = file_type if isinstance(file_type, str) else 'parquet'
+        file_type = file_type if isinstance(file_type, str) else 'json'
 
         _pattern = f"{prefix}{name}"
         if isinstance(path, (str, list)):
