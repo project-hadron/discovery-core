@@ -313,17 +313,6 @@ class AbstractPersistHandler(AbstractSourceHandler):
     def remove_canonical(self, **kwargs) -> bool:
         pass
 
-    @abstractmethod
-    def backup_canonical(self, canonical: Any, uri: str, **kwargs) -> bool:
-        """ creates a backup of the canonical to an alternative uri
-
-        :param canonical: the canonical to back up
-        :param uri: an alternative uri to the one in the ConnectorContract
-        :param kwargs: if given, these kwargs are used as a replacement of the connector kwargs
-        :return: True if successful
-        """
-        pass
-
 
 class HandlerFactory(object):
 
@@ -377,7 +366,3 @@ class HandlerFactory(object):
         local_kwargs = locals().get('kwargs') if 'kwargs' in locals() else dict()
         local_kwargs['module'] = module
         local_kwargs['connector_contract'] = connector_contract
-        instance = eval(f'module.{handler}(connector_contract)', globals(), local_kwargs)
-        if not isinstance(instance, (AbstractSourceHandler, AbstractPersistHandler)):
-            raise TypeError(f"The handler '{handler}' in package {module_name} could not be instanciated as a handler")
-        return instance

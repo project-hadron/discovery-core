@@ -329,10 +329,10 @@ class CoreCommons(object):
         working = True
         while working:
             working = False
-            for c in t.column_names:
-                if c not in t.column_names:
+            for n in t.column_names:
+                if n not in t.column_names:
                     continue
-                record = t.column(c)
+                record = t.column(n)
                 if isinstance(record, pa.ChunkedArray):
                     record = record.combine_chunks()
                 if pa.types.is_list(record.type):
@@ -342,10 +342,10 @@ class CoreCommons(object):
                     record = pc.list_slice(record, start=0, stop=total_max, return_fixed_size_list=True)
                     for i in range(total_max):
                         try:
-                            t = t.append_column(f'{c}.nest_list_{i}', pc.list_element(record, i))
+                            t = t.append_column(f'{n}.nest_list_{i}', pc.list_element(record, i))
                         except ArrowInvalid:
                             break
-                    t = t.drop_columns(c)
+                    t = t.drop_columns(n)
                     working = True
                 if pa.types.is_struct(record.type):
                     t = t.flatten()

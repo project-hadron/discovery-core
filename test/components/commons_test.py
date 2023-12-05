@@ -96,7 +96,7 @@ class CommonsTest(unittest.TestCase):
         control = CoreCommons.filter_headers(result, regex='nest_list_', drop=True)
         self.assertCountEqual(['middleName', 'gender', '_id', 'givenName', 'familyName'], control)
         control = len(CoreCommons.filter_headers(result, regex='nest_list_'))
-        self.assertEqual(13, control)
+        self.assertEqual(16, control)
 
     def test_table_nest(self):
         document = [
@@ -123,9 +123,20 @@ class CommonsTest(unittest.TestCase):
                             {'c': [{'z': 4}]}]
                      }]
         tbl = CoreCommons.table_flatten(pa.Table.from_pylist(document))
-        print(tbl.column_names , "\n\n")
+        self.assertEqual(tbl.column_names , ['a.nest_list_0.b', 'a.nest_list_0.c.nest_list_0.z', 'a.nest_list_1.c.nest_list_0.z'] )
         result = CoreCommons.table_nest(tbl)
-        print("\n\n", result)
+        self.assertEqual(result,  [{'a': [{'b': 1, 'c': [{'z': 6}]}, {'c': [{'z': 4}]}]}])
+
+    def test_nest_list_order(self):
+        document = [{'name': [{'state': 'AZ'},]},
+                    {'name': [{'city': 'Fredville'},
+                             {'state': 'VA'},]},
+                    {'name': [{'state': 'TX'},
+                              {'city': 'Georgetown'},]},]
+        tbl = CoreCommons.table_flatten(pa.Table.from_pylist(document), flatten_list=False)
+        print(CoreCommons.tbl)
+
+
 
 
     def test_table_nest_flatten(self):
