@@ -377,3 +377,7 @@ class HandlerFactory(object):
         local_kwargs = locals().get('kwargs') if 'kwargs' in locals() else dict()
         local_kwargs['module'] = module
         local_kwargs['connector_contract'] = connector_contract
+        instance = eval(f'module.{handler}(connector_contract)', globals(), local_kwargs)
+        if not isinstance(instance, (AbstractSourceHandler, AbstractPersistHandler)):
+            raise TypeError(f"The handler '{handler}' in package {module_name} could not be instanciated as a handler")
+        return instance
