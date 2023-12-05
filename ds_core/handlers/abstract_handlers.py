@@ -313,6 +313,17 @@ class AbstractPersistHandler(AbstractSourceHandler):
     def remove_canonical(self, **kwargs) -> bool:
         pass
 
+    @abstractmethod
+    def backup_canonical(self, canonical: Any, uri: str, **kwargs) -> bool:
+        """ creates a backup of the canonical to an alternative uri
+
+        :param canonical: the canonical to back up
+        :param uri: an alternative uri to the one in the ConnectorContract
+        :param kwargs: if given, these kwargs are used as a replacement of the connector kwargs
+        :return: True if successful
+        """
+        pass
+
 
 class HandlerFactory(object):
 
