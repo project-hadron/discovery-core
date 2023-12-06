@@ -170,6 +170,26 @@ class ConnectorContractTest(unittest.TestCase):
         query = ConnectorContract.parse_query(uri)
         self.assertEqual({'query1': 'value1', 'query2': 'value2'}, query)
 
+    def test_parse_ini(self):
+        config_name = '~/.commons.ini'
+        section = 'postgresql'
+        result = ConnectorContract.parse_ini(config_name, section)
+        self.assertTrue(len(result) > 0)
+        section = 'default'
+        result = ConnectorContract.parse_ini(config_name, section)
+        self.assertTrue(len(result) == 0)
+
+        section = 'empty'
+        with self.assertRaises(ValueError) as context:
+            result = ConnectorContract.parse_ini(config_name, section)
+        self.assertTrue("Section 'empty' could not be found in the configuration file '/Users/doatridge/.commons.ini'" in str(context.exception))
+
+        config_name = 'commons.ini'
+        with self.assertRaises(ValueError) as context:
+            result = ConnectorContract.parse_ini(config_name, section)
+        self.assertTrue("The configuration file 'commons.ini' does not exist or could not be opened." in str(context.exception))
+
+
     def test_uri(self):
         uri = "s3://bucket/path/aistac_manager_task_connector.parquet"
         cc = ConnectorContract(uri, 'module.name', 'Handler')

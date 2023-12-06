@@ -1,7 +1,9 @@
 import importlib.util
 import os
 import re
+from configparser import ConfigParser
 from datetime import datetime
+from pathlib import Path
 from urllib.parse import parse_qsl, urlparse, urlunparse, urlencode
 from abc import ABC, abstractmethod
 from typing import Any
@@ -247,6 +249,27 @@ class ConnectorContract(object):
         rtn_dict = {'raw_uri': self.raw_uri, 'raw_module_name': self.raw_module_name, 'raw_handler': self.raw_handler,
                     'raw_version': self.raw_version, 'raw_kwargs': self.raw_kwargs}
         return rtn_dict
+
+    @staticmethod
+    def parse_ini(config_name: str=None, section: str=None):
+        config_name = config_name if isinstance(config_name, str) else '~/.commons.ini'
+        config_name = Path(os.path.expanduser(config_name)).as_posix()
+        if not os.path.exists(config_name):
+            raise ValueError(f"The configuration file '{config_name}' does not exist or could not be opened.")
+        section = section if isinstance(section, str) else 'default'
+        # create a parser
+        parser = ConfigParser()
+        # read config file
+        parser.read(config_name)
+        # get section
+        config = {}
+        if parser.has_section(section):
+            params = parser.items(section)
+            for param in params:
+                config[param[0]] = param[1]
+        else:
+            raise ValueError(f"Section '{section}' could not be found in the configuration file '{config_name}'")
+        return config
 
     def __len__(self):
         return self.to_raw_dict().__len__()
