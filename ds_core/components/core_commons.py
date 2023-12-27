@@ -473,7 +473,7 @@ class CoreCommons(object):
 
     @staticmethod
     def table_cast(t: pa.Table, inc_cat: bool=None, cat_max: int=None, inc_bool: bool=None, inc_time:bool=None,
-                   units: str=None, tz: str=None):
+                   dt_format: str=None, units: str=None, tz: str=None):
         """ attempt to cast a pyarrow table columns to an appropriate type
 
         :param t: a pa.Table to cast
@@ -481,6 +481,7 @@ class CoreCommons(object):
         :param cat_max: the max number of unique categories to consider
         :param inc_bool: if to cast booleans
         :param inc_time: if to cast time and timestamp
+        :param dt_format: if unclear, the format of the string datetime
         :param units: the units to cast a timestamp to
         :param tz: the timezone to cast a timestamp to
         """
@@ -499,7 +500,11 @@ class CoreCommons(object):
             elif not inc_time and (pa.types.is_time(c.type) or pa.types.is_timestamp(c.type)):
                 c = c.cast(pa.string())
             if inc_time and pa.types.is_string(c.type):
-                c = CoreCommons.column_cast(c, pa.timestamp(unit=units, tz=tz))
+                if all([CoreCommons.valid_date(x) for x in c.drop_null().to_pylist()]):
+                    if isinstance(dt_format, str):
+                        c = pc.strptime(c, format=dt_format, unit=units)
+                    else:
+                        c = CoreCommons.column_cast(c, pa.timestamp(unit=units, tz=tz))
             if pa.types.is_string(c.type):
                 c = CoreCommons.column_cast(c, pa.float64())
             if pa.types.is_floating(c.type):

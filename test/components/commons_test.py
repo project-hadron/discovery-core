@@ -196,6 +196,13 @@ class CommonsTest(unittest.TestCase):
         self.assertEqual(pa.bool_(), CoreCommons.column_cast(bool2, pa.bool_()).type)
         self.assertEqual(pa.string(), CoreCommons.column_cast(bool3, pa.bool_()).type)
 
+    def test_table_cast_us_date(self):
+        str_dt = pa.array(["01-16-2023", "03-07-2023", None, "11-05-2023"], pa.string())
+        tbl = pa.table([str_dt], names=['str_dt'])
+        result = CoreCommons.table_cast(tbl, dt_format="%m-%d-%Y").combine_chunks()
+        control = pa.schema([('str_dt', pa.timestamp('ns'))])
+        self.assertEqual(control, result.schema)
+
     def test_table_cast(self):
         num = pa.array([1.0, 12.0, 5.0, None], pa.float64())
         date = pc.strptime(["2023-01-02 04:49:06", "2023-01-02 04:57:12", None, "2023-01-02 05:23:50"], format='%Y-%m-%d %H:%M:%S', unit='ns')
