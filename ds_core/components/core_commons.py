@@ -500,7 +500,7 @@ class CoreCommons(object):
             elif not inc_time and (pa.types.is_time(c.type) or pa.types.is_timestamp(c.type)):
                 c = c.cast(pa.string())
             if inc_time and pa.types.is_string(c.type):
-                if all([CoreCommons.valid_date(x) for x in c.drop_null().to_pylist()]):
+                if any([CoreCommons.valid_date(x) for x in c.drop_null().to_pylist()]):
                     if isinstance(dt_format, str):
                         c = pc.strptime(c, format=dt_format, unit=units)
                     else:
