@@ -962,7 +962,7 @@ class AbstractPropertyManager(ABC):
         for name_key in self.get(self.KEY.connectors_key).keys():
             if isinstance(connector_filter, list) and connector_filter and name_key not in connector_filter:
                 continue
-            if name_key.startswith('pm_transition') and not inc_pm:
+            if name_key.startswith('pm_') and not inc_pm:
                 continue
             if name_key.startswith('template_') and not inc_template:
                 continue

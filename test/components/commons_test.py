@@ -420,6 +420,8 @@ class CommonsTest(unittest.TestCase):
         self.assertFalse(CoreCommons.valid_date(str_date))
         str_date = '01-21-2017 21:12:46'
         self.assertTrue(CoreCommons.valid_date(str_date))
+        str_date = '01/21/2017 21:12:46.000000'
+        self.assertTrue(CoreCommons.valid_date(str_date))
 
     def test_analytics(self):
         analysis = {'intent': {'categories': ['a', 'b'], 'dtype': 'category'},
