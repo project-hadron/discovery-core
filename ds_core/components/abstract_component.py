@@ -803,7 +803,7 @@ class AbstractComponent(ABC):
         self.pm_persist(save)
         return result
 
-    def add_action_description(self, action: [int, str], text: str, save: bool=None):
+    def add_intent_description(self, action: [int, str], text: str, save: bool=None):
         """ sets description associated with an intent action
 
         :param action: the action to add the comment to
