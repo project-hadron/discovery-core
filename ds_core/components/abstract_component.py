@@ -803,14 +803,14 @@ class AbstractComponent(ABC):
         self.pm_persist(save)
         return result
 
-    def add_intent_level_description(self, level: [int, str], text: str, save: bool=None):
-        """ sets description to the augmented knowledge 'intent' to a level
+    def add_action_description(self, action: [int, str], text: str, save: bool=None):
+        """ sets description associated with an intent action
 
-        :param level: the intent level to add the comment to
+        :param action: the action to add the comment to
         :param text: the description text
         :param save: (optional) override of the default save action set at initialisation.
         """
-        self.pm.set_intent_description(level=level, text=text)
+        self.pm.set_intent_description(level=action, text=text)
         self.pm_persist(save)
         return
 
