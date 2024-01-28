@@ -362,7 +362,7 @@ class AbstractComponent(ABC):
                                     os.environ.get(f"HADRON_DEFAULT_{level}".upper(), None))
         return default if result is None else result
 
-    def report_environ(self, hide_not_set: bool=True):
+    def report_environ(self):
         """returns a report on the foundation environment variables"""
         report = dict()
         pm_cc = self.pm.get_connector_contract(self.pm.CONNECTOR_PM_CONTRACT)
