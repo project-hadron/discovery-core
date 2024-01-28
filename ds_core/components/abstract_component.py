@@ -365,20 +365,20 @@ class AbstractComponent(ABC):
     def report_environ(self, hide_not_set: bool=True):
         """returns a report on the foundation environment variables"""
         report = dict()
-        for task in [f'{self.pm.manager_name()}_{self.pm.task_name}', f'{self.pm.manager_name()}', 'default']:
-            for level in ['path', 'module', 'handler']:
-                for handle in ['_source', '_persist', '']:
-                    environ = f'HADRON_{task}{handle}_{level}'.upper()
-                    if os.environ.get(environ, None) is None and hide_not_set:
-                        continue
-                    report.update({environ: os.environ.get(environ, 'not used')})
-        pc = self.pm.get_connector_contract(self.pm.CONNECTOR_PM_CONTRACT)
-        report.update({'HADRON_PM_PATH': os.environ.get('HADRON_PM_PATH', pc.path)})
+        pm_cc = self.pm.get_connector_contract(self.pm.CONNECTOR_PM_CONTRACT)
+        cc = self.pm.get_connector_contract(self.CONNECTOR_PERSIST)
+        report.update({'HADRON_DEFAULT_PATH': os.environ.get('HADRON_DEFAULT_PATH', cc.path)})
+        report.update({'HADRON_DEFAULT_MODULE': os.environ.get('HADRON_DEFAULT_MODULE', cc.module_name)})
+        report.update({'HADRON_DEFAULT_HANDLER': os.environ.get('HADRON_DEFAULT_HANDLER', cc.handler)})
+        report.update({'HADRON_PM_PATH': os.environ.get('HADRON_PM_PATH', pm_cc.path)})
         report.update({'HADRON_PM_REPO': os.environ.get('HADRON_PM_REPO', 'not used')})
         report.update({'HADRON_PM_TYPE': os.environ.get('HADRON_PM_TYPE', 'default')})
-        report.update({'HADRON_PM_MODULE': os.environ.get('HADRON_PM_MODULE', 'default')})
-        report.update({'HADRON_PM_HANDLER': os.environ.get('HADRON_PM_HANDLER', 'default')})
+        report.update({'HADRON_PM_MODULE': os.environ.get('HADRON_PM_MODULE', pm_cc.module_name)})
+        report.update({'HADRON_PM_HANDLER': os.environ.get('HADRON_PM_HANDLER', pm_cc.handler)})
         report.update({'HADRON_CREATOR': os.environ.get('HADRON_CREATOR', 'account default')})
+        for key in os.environ.keys():
+            if key.startswith('HADRON_'):
+                report.update({key: os.environ.get(key, 'not used')})
         return report
 
     @property
