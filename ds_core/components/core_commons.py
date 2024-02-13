@@ -165,6 +165,14 @@ class CoreCommons(object):
         return list(seen_twice)
 
     @staticmethod
+    def list_match(seq: list, pattern: str) -> list:
+        """ Useful utility method to run a regular expression on a list"""
+        if not isinstance(seq, list):
+            raise ValueError("The sequence must be of type 'list'")
+        r = re.compile(pattern)
+        return list(filter(r.match, seq))
+
+    @staticmethod
     def list_unique(seq: list) -> list:
         """ Useful utility method to retain the order of a list but removes duplicates"""
         if not isinstance(seq, list):
