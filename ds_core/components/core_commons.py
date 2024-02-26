@@ -5,6 +5,7 @@ import math
 import re
 from datetime import datetime
 from typing import Any
+import numpy as np
 import pyarrow as pa
 import pyarrow.compute as pc
 from pyarrow.lib import ArrowInvalid, ArrowTypeError, ArrowNotImplementedError
@@ -14,7 +15,7 @@ class CoreCommons(object):
 
     @staticmethod
     def list_formatter(value: Any) -> list:
-        """ Useful utility method to convert any type of str, list, tuple or pd.Series into a list"""
+        """ Useful utility method to convert any type of str, list, tuple or array into a list"""
         if isinstance(value, (int, float, str, datetime)):
             return [value]
         if isinstance(value, (list, tuple, set)):
@@ -23,6 +24,10 @@ class CoreCommons(object):
             return list(value)
         if isinstance(value, dict):
             return list(value.keys())
+        if isinstance(value, np.ndarray):
+            return value.tolist()
+        if isinstance(value, pa.Array):
+            return value.to_pylist()
         return list()
 
     @staticmethod
