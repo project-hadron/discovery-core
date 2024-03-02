@@ -269,10 +269,12 @@ class CoreCommons(object):
     @staticmethod
     def filter_headers(data: pa.Table, headers: [str, list]=None, d_types: list=None, regex: [str, list]=None,
                        drop: bool=None) -> list:
-        """ returns a list of headers based on the filter criteria.as_py) The order of filter is d_type, headers then regex.
+        """ returns a list of headers based on the filter criteria. The order of filter is d_type, headers then regex.
+        Data type are taken from `pyarrow.types` and should be a string or list of strings that question a data type.
+        For example ['is_integer', 'is_floating']
 
         :param data: the Canonical data to get the column headers from
-        :param d_types: (optional) a list of pyarrow DataTypes of the columns headers
+        :param d_types: (optional) a list of `pyarrow.types` method names of the columns headers
         :param headers: (optional) a list of header strings to select from the columns headers
         :param regex: (optional) a regular expression to search from the columns headers
         :param drop: (optional) reverses the selection and drops the selected column headers
@@ -283,15 +285,17 @@ class CoreCommons(object):
         if not isinstance(data, pa.Table):
             raise TypeError("The first function attribute must be a pa.Table")
         drop = drop if isinstance(drop, bool) else False
+        d_types = CoreCommons.list_formatter(d_types)
         headers = CoreCommons.list_formatter(headers)
         regex = '|'.join(CoreCommons.list_formatter(regex))
-        rtn_list = []
         if d_types is not None and d_types:
+            types = []
             for n in data.column_names:
                 c = data.column(n).combine_chunks()
                 for t in d_types:
-                    if c.type.equals(t):
-                        rtn_list.append(n)
+                    if eval(f"pa.types.{t}(c.type)", globals(), locals()):
+                        types.append(n)
+            rtn_list = CoreCommons.list_unique(types)
         else:
             rtn_list = data.column_names
         if headers is not None and headers:
