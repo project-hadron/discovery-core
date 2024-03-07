@@ -293,8 +293,12 @@ class CoreCommons(object):
             for n in data.column_names:
                 c = data.column(n).combine_chunks()
                 for t in d_types:
-                    if eval(f"pa.types.{t}(c.type)", globals(), locals()):
-                        types.append(n)
+                    if isinstance(t, str):
+                        if eval(f"pa.types.{t}(c.type)", globals(), locals()):
+                            types.append(n)
+                    elif isinstance(c.type, pa.DataType):
+                        if c.type.equals(t):
+                            types.append(n)
             rtn_list = CoreCommons.list_unique(types)
         else:
             rtn_list = data.column_names

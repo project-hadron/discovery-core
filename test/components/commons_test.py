@@ -273,6 +273,8 @@ class CommonsTest(unittest.TestCase):
         self.assertCountEqual(['int', 'string'], result)
         result = CoreCommons.filter_headers(tbl, d_types=['is_boolean', 'is_string'])
         self.assertCountEqual(['bool', 'string', 'bool_null', 'string_null', 'nulls_str'], result)
+        result = CoreCommons.filter_headers(tbl, d_types=[pa.bool_(), pa.string()])
+        self.assertCountEqual(['bool', 'string', 'bool_null', 'string_null', 'nulls_str'], result)
         result = CoreCommons.filter_headers(tbl, headers=['num','int','string'], d_types=['is_boolean', 'is_string'])
         self.assertCountEqual(['string'], result)
 
