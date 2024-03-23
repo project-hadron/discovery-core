@@ -649,7 +649,7 @@ class AbstractComponent(ABC):
         uri_file = uri_file if isinstance(uri_file, str) else file_pattern
         self.add_connector_from_template(connector_name=self.CONNECTOR_PERSIST, uri_file=uri_file,
                                          template_name=self.pm.TEMPLATE_PERSIST, save=save, **kwargs)
-        return self
+        return
 
     def set_persist_uri(self, uri: str, save: bool=None, template_aligned: bool=None, **kwargs):
         """ Sets the persist contract giving the full uri path. This is a shortcut of set_persist_contract(...), not
@@ -662,7 +662,7 @@ class AbstractComponent(ABC):
         template_aligned = template_aligned if isinstance(template_aligned, bool) else False
         self.add_connector_uri(connector_name=self.CONNECTOR_PERSIST, save=save, uri=uri,
                                template_aligned=template_aligned, **kwargs)
-        return self
+        return
 
     def set_persist_contract(self, connector_contract: ConnectorContract, save: bool=None):
         """ Sets the persist contract.
@@ -672,7 +672,7 @@ class AbstractComponent(ABC):
         """
         self.add_connector_contract(connector_name=self.CONNECTOR_PERSIST, connector_contract=connector_contract,
                                     save=save)
-        return self
+        return
 
     def set_report_persist(self, reports: [str, list], project: str=None, path: [str, list]=None, prefix: str=None,
                            suffix: str=None, file_type: str=None, versioned: bool=None, stamped: str=None,
