@@ -456,12 +456,13 @@ class CoreCommons(object):
         sep = sep if isinstance(sep, str) else ''
         return pc.binary_join_element_wise(pc.cast(a, pa.string()), pc.cast(b, pa.string()), sep)
 
-
     @staticmethod
     def column_precision(a: pa.Array):
         """returns the max precision in a numeric pyarrow array"""
-        if pa.types.is_floating(a.type) or pa.types.is_integer(a.type):
+        if pa.types.is_floating(a.type):
             return max([CoreCommons.precision_scale(x)[1] for x in a.drop_null().to_pylist()])
+        if pa.types.is_integer(a.type):
+            return 0
         raise ValueError(f"The array should be numeric, type '{a.type}' sent.")
 
     @staticmethod
