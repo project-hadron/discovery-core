@@ -58,7 +58,7 @@ setup(
     license='BSD',
     include_package_data=True,
     package_data={},
-    python_requires='>=3.7',
+    python_requires='>=3.8',
     install_requires=[],
     extras_require={},
     entry_points={},

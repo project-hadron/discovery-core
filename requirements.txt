@@ -5,6 +5,7 @@
 ###### Requirements without Version Specifiers ######
 setuptools
 pyarrow
+requests
 
 #
 ###### Requirements with Version Specifiers ######

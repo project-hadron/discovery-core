@@ -25,9 +25,9 @@ class ControlPropertyManager(AbstractPropertyManager):
 
 class ControlComponent(AbstractComponent):
 
-    DEFAULT_MODULE = 'ds_capability.handlers.pyarrow_handlers'
-    DEFAULT_SOURCE_HANDLER = 'PyarrowSourceHandler'
-    DEFAULT_PERSIST_HANDLER = 'PyarrowPersistHandler'
+    DEFAULT_MODULE = 'ds_core.handlers.base_handlers'
+    DEFAULT_SOURCE_HANDLER = 'BaseSourceHandler'
+    DEFAULT_PERSIST_HANDLER = 'BasePersistHandler'
 
     def __init__(self, property_manager: ControlPropertyManager, intent_model: PyarrowIntentModel,
                  default_save=None, reset_templates: bool = None, template_path: str=None, template_module: str=None,
@@ -45,8 +45,8 @@ class ControlComponent(AbstractComponent):
                  default_save_intent: bool=None, default_intent_level: bool=None, order_next_available: bool=None,
                  default_replace_intent: bool=None, has_contract: bool=None):
         pm_file_type = pm_file_type if isinstance(pm_file_type, str) else 'json'
-        pm_module = pm_module if isinstance(pm_module, str) else 'ds_capability.handlers.pyarrow_handlers'
-        pm_handler = pm_handler if isinstance(pm_handler, str) else 'PyarrowPersistHandler'
+        pm_module = pm_module if isinstance(pm_module, str) else 'ds_core.handlers.base_handlers'
+        pm_handler = pm_handler if isinstance(pm_handler, str) else 'BasePersistHandler'
         _pm = ControlPropertyManager(task_name=task_name, creator=creator)
         _intent_model = PyarrowIntentModel(property_manager=_pm, default_save_intent=default_save_intent,
                                            default_intent_level=default_intent_level,
@@ -103,7 +103,7 @@ class AbstractComponentTest(unittest.TestCase):
 
     def test_scratch_pad(self):
         model = ControlComponent.scratch_pad()
-        self.assertGreaterEqual(str(type(model)).find('PyarrowCleanersIntentModel'), 0)
+        self.assertGreaterEqual(str(type(model)).find('BaseCleanersIntentModel'), 0)
 
     def test_from_memory(self):
         model: ControlComponent = ControlComponent.from_memory()
@@ -111,7 +111,7 @@ class AbstractComponentTest(unittest.TestCase):
 
     def test_intent_model(self):
         model = ControlComponent.from_env('tester', has_contract=False).intent_model
-        self.assertGreaterEqual(str(type(model)).find('PyarrowCleanersIntentModel'), 0)
+        self.assertGreaterEqual(str(type(model)).find('BaseCleanersIntentModel'), 0)
 
     def test_pm(self):
         model = ControlComponent.from_env('tester', has_contract=False).pm
@@ -210,54 +210,54 @@ class AbstractComponentTest(unittest.TestCase):
         report = instance.pm.report_connectors(inc_pm=True, inc_template=True)
         control = [instance.pm.CONNECTOR_PM_CONTRACT, instance.pm.TEMPLATE_SOURCE, instance.pm.TEMPLATE_PERSIST]
         self.assertCountEqual(control, report.get('connector_name'))
-        control = ['PyarrowPersistHandler', 'PyarrowSourceHandler', 'PyarrowPersistHandler']
+        control = ['BasePersistHandler', 'BaseSourceHandler', 'BasePersistHandler']
         self.assertCountEqual(control, report.get('handler'))
-        control = ['ds_capability.handlers.pyarrow_handlers']*3
+        control = ['ds_core.handlers.base_handlers']*3
         self.assertCountEqual(control, report.get('module_name'))
         self.assertIn(os.environ.get('HADRON_PM_PATH') + '/hadron_pm_control_task.parquet', report.get('uri'))
 
     def test_PM_from_env(self):
         os.environ['HADRON_PM_PATH'] = "work/test/contracts"
         os.environ['HADRON_PM_TYPE'] = 'json'
-        os.environ['HADRON_PM_MODULE'] = 'ds_capability.handlers.pyarrow_handlers'
-        os.environ['HADRON_PM_HANDLER'] = 'PyarrowPersistHandler'
+        os.environ['HADRON_PM_MODULE'] = 'ds_core.handlers.base_handlers'
+        os.environ['HADRON_PM_HANDLER'] = 'BasePersistHandler'
         instance = ControlComponent.from_env('task', has_contract=False, encoding='Latin1')
         result = instance.pm.get_connector_contract(instance.pm.CONNECTOR_PM_CONTRACT)
         self.assertEqual('work/test/contracts/hadron_pm_control_task.json', result.uri)
-        self.assertEqual('PyarrowPersistHandler', result.handler)
-        self.assertEqual('ds_capability.handlers.pyarrow_handlers_redo_rule_due', result.module_name)
-        self.assertDictEqual({'A': '24', 'B': 'fred', 'encoding': 'Latin1'}, result.kwargs)
+        self.assertEqual('BasePersistHandler', result.handler)
+        self.assertEqual('ds_core.handlers.base_handlers', result.module_name)
+        self.assertDictEqual({'encoding': 'Latin1'}, result.kwargs)
 
     def test_DEFAULT_from_env(self):
         os.environ['HADRON_DEFAULT_PATH'] = "HADRON_DEFAULT_PATH?A=24&B=fred"
         os.environ['HADRON_DEFAULT_MODULE'] = "tests.handlers.test_handlers"
-        os.environ['HADRON_DEFAULT_SOURCE_HANDLER'] = "PyarrowSourceHandler"
-        os.environ['HADRON_DEFAULT_PERSIST_HANDLER'] = "PyarrowPersistHandler"
+        os.environ['HADRON_DEFAULT_SOURCE_HANDLER'] = "BaseSourceHandler"
+        os.environ['HADRON_DEFAULT_PERSIST_HANDLER'] = "BasePersistHandler"
         instance = ControlComponent.from_env('task', has_contract=False, encoding='Latin1')
         source = instance.pm.get_connector_contract(instance.pm.TEMPLATE_SOURCE)
         self.assertEqual('HADRON_DEFAULT_PATH?A=24&B=fred', source.uri)
-        self.assertEqual('PyarrowSourceHandler', source.handler)
-        self.assertEqual('ds_capability.handlers.pyarrow_handlers', source.module_name)
+        self.assertEqual('BaseSourceHandler', source.handler)
+        self.assertEqual('ds_core.handlers.base_handlers', source.module_name)
         self.assertDictEqual({}, source.kwargs)
         persist = instance.pm.get_connector_contract(instance.pm.TEMPLATE_PERSIST)
         self.assertEqual('HADRON_DEFAULT_PATH?A=24&B=fred', persist.uri)
-        self.assertEqual('PyarrowPersistHandler', persist.handler)
-        self.assertEqual('ds_capability.handlers.pyarrow_handlers', persist.module_name)
+        self.assertEqual('BasePersistHandler', persist.handler)
+        self.assertEqual('ds_core.handlers.base_handlers', persist.module_name)
         self.assertDictEqual({}, persist.kwargs)
         os.environ['HADRON_DEFAULT_PATH'] = "HADRON_CONTROL_PATH?C=24&B=fred"
-        os.environ['HADRON_DEFAULT_MODULE'] = "ds_capability.handlers.pyarrow_handlers"
-        os.environ['HADRON_DEFAULT_SOURCE_HANDLER'] = "PyarrowSourceHandler"
-        os.environ['HADRON_DEFAULT_PERSIST_HANDLER'] = "PyarrowPersistHandler"
+        os.environ['HADRON_DEFAULT_MODULE'] = "ds_core.handlers.base_handlers"
+        os.environ['HADRON_DEFAULT_SOURCE_HANDLER'] = "BaseSourceHandler"
+        os.environ['HADRON_DEFAULT_PERSIST_HANDLER'] = "BasePersistHandler"
         instance = ControlComponent.from_env('task', has_contract=False)
         source = instance.pm.get_connector_contract(instance.pm.TEMPLATE_SOURCE)
         self.assertEqual('HADRON_CONTROL_PATH?C=24&B=fred', source.uri)
-        self.assertEqual('PyarrowSourceHandler', source.handler)
-        self.assertEqual('ds_capability.handlers.pyarrow_handlers', source.module_name)
+        self.assertEqual('BaseSourceHandler', source.handler)
+        self.assertEqual('ds_core.handlers.base_handlers', source.module_name)
         self.assertDictEqual({}, source.kwargs)
         persist = instance.pm.get_connector_contract(instance.pm.TEMPLATE_PERSIST)
         self.assertEqual('HADRON_CONTROL_PATH?C=24&B=fred', persist.uri)
-        self.assertEqual('PyarrowPersistHandler', persist.handler)
-        self.assertEqual('ds_capability.handlers.pyarrow_handlers', persist.module_name)
+        self.assertEqual('BasePersistHandler', persist.handler)
+        self.assertEqual('ds_core.handlers.base_handlers', persist.module_name)
         self.assertDictEqual({}, persist.kwargs)
 
     def test_from_environ(self):
@@ -272,8 +272,8 @@ class AbstractComponentTest(unittest.TestCase):
         instance = ControlComponent.from_env('task', has_contract=False)
         cc = instance.pm.get_connector_contract(connector_name=instance.pm.CONNECTOR_PM_CONTRACT)
         self.assertTrue(cc.uri.startswith('work/contracts/task/'))
-        self.assertEqual("ds_capability.handlers.pyarrow_handlers", cc.module_name)
-        self.assertEqual("PyarrowPersistHandler", cc.handler)
+        self.assertEqual("ds_core.handlers.base_handlers", cc.module_name)
+        self.assertEqual("BasePersistHandler", cc.handler)
         self.assertTrue(cc.raw_uri.startswith('work/${BUCKET}/${TASK}/'))
         self.assertEqual("${MODULE}", cc.raw_module_name)
         self.assertEqual("${HANDLER}", cc.raw_handler)
@@ -367,31 +367,31 @@ class AbstractComponentTest(unittest.TestCase):
         # source
         connector = manager.pm.get_connector_contract(manager.pm.TEMPLATE_SOURCE)
         self.assertEqual(os.environ['HADRON_DEFAULT_PATH'], connector.uri)
-        self.assertEqual('ds_capability.handlers.pyarrow_handlers', connector.module_name)
-        self.assertEqual('PyarrowSourceHandler', connector.handler)
+        self.assertEqual('ds_core.handlers.base_handlers', connector.module_name)
+        self.assertEqual('BaseSourceHandler', connector.handler)
         # persist
         manager = ControlComponent.from_env('task', has_contract=False)
         connector = manager.pm.get_connector_contract(manager.pm.TEMPLATE_PERSIST)
         self.assertEqual(os.environ['HADRON_DEFAULT_PATH'], connector.uri)
-        self.assertEqual('ds_capability.handlers.pyarrow_handlers', connector.module_name)
-        self.assertEqual('PyarrowPersistHandler', connector.handler)
+        self.assertEqual('ds_core.handlers.base_handlers', connector.module_name)
+        self.assertEqual('BasePersistHandler', connector.handler)
         # set source
         manager.add_connector_from_template(connector_name='source', uri_file='mysource.parquet', template_name=manager.pm.TEMPLATE_SOURCE)
         connector = manager.pm.get_connector_contract('source')
         self.assertEqual(f"{os.environ['HADRON_DEFAULT_PATH']}/mysource.parquet", connector.uri)
-        self.assertEqual('ds_capability.handlers.pyarrow_handlers', connector.module_name)
-        self.assertEqual('PyarrowSourceHandler', connector.handler)
+        self.assertEqual('ds_core.handlers.base_handlers', connector.module_name)
+        self.assertEqual('BaseSourceHandler', connector.handler)
         # set persist
         manager.add_connector_from_template(connector_name='persist', uri_file='mypersist.parquet', template_name=manager.pm.TEMPLATE_PERSIST)
         connector = manager.pm.get_connector_contract('persist')
         self.assertEqual(f"{os.environ['HADRON_DEFAULT_PATH']}/mypersist.parquet", connector.uri)
-        self.assertEqual('ds_capability.handlers.pyarrow_handlers', connector.module_name)
-        self.assertEqual('PyarrowPersistHandler', connector.handler)
+        self.assertEqual('ds_core.handlers.base_handlers', connector.module_name)
+        self.assertEqual('BasePersistHandler', connector.handler)
 
     def test_modify_connector_from_template(self):
-        os.environ['HADRON_DEFAULT_MODULE'] = 'ds_capability.handlers.pyarrow_handlers'
-        os.environ['HADRON_DEFAULT_SOURCE_HANDLER'] = 'PyarrowSourceHandler'
-        os.environ['HADRON_DEFAULT_PERSIST_HANDLER'] = 'PyarrowPersistHandler'
+        os.environ['HADRON_DEFAULT_MODULE'] = 'ds_core.handlers.base_handlers'
+        os.environ['HADRON_DEFAULT_SOURCE_HANDLER'] = 'BaseSourceHandler'
+        os.environ['HADRON_DEFAULT_PERSIST_HANDLER'] = 'BasePersistHandler'
         manager = ControlComponent.from_env('task', has_contract=False)
         self.assertTrue(manager.pm.has_connector(manager.pm.TEMPLATE_SOURCE))
         self.assertTrue(manager.pm.has_connector(manager.pm.TEMPLATE_PERSIST))
@@ -402,12 +402,12 @@ class AbstractComponentTest(unittest.TestCase):
         manager.reset_template_connectors()
         result = manager.pm.get_connector_contract('my_source')
         self.assertEqual(f"{os.environ['HADRON_DEFAULT_PATH']}/source_file.parquet", result.uri)
-        self.assertEqual('ds_capability.handlers.pyarrow_handlers', result.module_name)
-        self.assertEqual('PyarrowSourceHandler', result.handler)
+        self.assertEqual('ds_core.handlers.base_handlers', result.module_name)
+        self.assertEqual('BaseSourceHandler', result.handler)
         result = manager.pm.get_connector_contract('my_persist')
         self.assertEqual(f"{os.environ['HADRON_DEFAULT_PATH']}/persist_file.parquet", result.uri)
-        self.assertEqual('ds_capability.handlers.pyarrow_handlers', result.module_name)
-        self.assertEqual('PyarrowPersistHandler', result.handler)
+        self.assertEqual('ds_core.handlers.base_handlers', result.module_name)
+        self.assertEqual('BasePersistHandler', result.handler)
         os.environ.pop('HADRON_DEFAULT_MODULE')
         os.environ.pop('HADRON_DEFAULT_SOURCE_HANDLER')
         os.environ.pop('HADRON_DEFAULT_PERSIST_HANDLER')
