@@ -228,7 +228,7 @@ class AbstractComponent(ABC):
                 property_manager.set_property_connector(connector_contract=_connector)
                 try:
                     property_manager.load_properties()
-                except [KeyError, IOError]:
+                except (KeyError, IOError):
                     raise ConnectionError("Unable to retrieve the persisted properties, file might be corrupted "
                                           "or of a different format")
                 # reset to overwrite anything loaded
