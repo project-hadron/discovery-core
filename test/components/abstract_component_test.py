@@ -44,7 +44,7 @@ class ControlComponent(AbstractComponent):
                  template_source_handler: str=None, template_persist_handler: str=None, align_connectors: bool=None,
                  default_save_intent: bool=None, default_intent_level: bool=None, order_next_available: bool=None,
                  default_replace_intent: bool=None, has_contract: bool=None):
-        pm_file_type = pm_file_type if isinstance(pm_file_type, str) else 'json'
+        pm_file_type = pm_file_type if isinstance(pm_file_type, str) else 'parquet'
         pm_module = pm_module if isinstance(pm_module, str) else 'ds_core.handlers.base_handlers'
         pm_handler = pm_handler if isinstance(pm_handler, str) else 'BasePersistHandler'
         _pm = ControlPropertyManager(task_name=task_name, creator=creator)
@@ -68,7 +68,7 @@ class AbstractComponentTest(unittest.TestCase):
             if var in os.environ:
                 del os.environ[var]
         os.environ['HADRON_PM_PATH'] = os.path.join(os.environ['PWD'], 'contract')
-        os.environ['HADRON_PM_TYPE'] = 'json'
+        os.environ['HADRON_PM_TYPE'] = 'parquet'
         os.environ['HADRON_USERNAME'] = 'TestUser'
         os.environ['HADRON_DEFAULT_PATH'] = os.path.join(os.environ['PWD'], 'work')
         PropertyManager._remove_all()
@@ -218,12 +218,12 @@ class AbstractComponentTest(unittest.TestCase):
 
     def test_PM_from_env(self):
         os.environ['HADRON_PM_PATH'] = "work/test/contracts"
-        os.environ['HADRON_PM_TYPE'] = 'json'
+        os.environ['HADRON_PM_TYPE'] = 'parquet'
         os.environ['HADRON_PM_MODULE'] = 'ds_core.handlers.base_handlers'
         os.environ['HADRON_PM_HANDLER'] = 'BasePersistHandler'
         instance = ControlComponent.from_env('task', has_contract=False, encoding='Latin1')
         result = instance.pm.get_connector_contract(instance.pm.CONNECTOR_PM_CONTRACT)
-        self.assertEqual('work/test/contracts/hadron_pm_control_task.json', result.uri)
+        self.assertEqual('work/test/contracts/hadron_pm_control_task.parquet', result.uri)
         self.assertEqual('BasePersistHandler', result.handler)
         self.assertEqual('ds_core.handlers.base_handlers', result.module_name)
         self.assertDictEqual({'encoding': 'Latin1'}, result.kwargs)
@@ -262,7 +262,7 @@ class AbstractComponentTest(unittest.TestCase):
 
     def test_from_environ(self):
         os.environ['HADRON_PM_PATH'] = "${BUCKET}://${TASK}"
-        os.environ['HADRON_PM_TYPE'] = 'json'
+        os.environ['HADRON_PM_TYPE'] = 'parquet'
         os.environ['HADRON_PM_MODULE'] = '${MODULE}'
         os.environ['HADRON_PM_HANDLER'] = '${HANDLER}'
         os.environ['BUCKET'] = 'contracts'

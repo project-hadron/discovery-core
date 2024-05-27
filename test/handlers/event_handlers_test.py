@@ -37,7 +37,7 @@ class FeatureBuilderTest(unittest.TestCase):
                 del os.environ[key]
         # Local Domain Contract
         os.environ['HADRON_PM_PATH'] = "event://pm_story"
-        os.environ['HADRON_PM_TYPE'] = 'json'
+        os.environ['HADRON_PM_TYPE'] = 'parquet'
         # Local Connectivity
         os.environ['HADRON_DEFAULT_PATH'] = "event://data"
         # Specialist Component

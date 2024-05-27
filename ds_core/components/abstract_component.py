@@ -2,9 +2,7 @@ import os
 import platform
 from abc import ABC, abstractmethod
 from typing import Any
-
 from ds_core.components.core_commons import CoreCommons
-
 from ds_core.intent.abstract_intent import AbstractIntentModel
 from ds_core.properties.abstract_properties import AbstractPropertyManager
 from ds_core.handlers.abstract_handlers import ConnectorContract, HandlerFactory
@@ -32,7 +30,7 @@ class AbstractComponent(ABC):
                      template_source_handler: str=None, template_persist_handler: str=None, align_connectors: bool=None,
                      default_save_intent: bool=None, default_intent_level: bool=None, order_next_available: bool=None,
                      default_replace_intent: bool=None, has_contract: bool=None):
-            pm_file_type = pm_file_type if isinstance(pm_file_type, str) else 'json'
+            pm_file_type = pm_file_type if isinstance(pm_file_type, str) else 'parquet'
             pm_module = pm_module if isinstance(pm_module, str) else cls.DEFAULT_MODULE
             pm_handler = pm_handler if isinstance(pm_handler, str) else cls.DEFAULT_PERSIST_HANDLER
             _pm = ExamplePropertyManager(task_name=task_name, username=username)
@@ -190,7 +188,7 @@ class AbstractComponent(ABC):
         if not isinstance(uri_pm_path, str) or len(uri_pm_path) == 0:
             raise ValueError("The URI must be a valid string representation of a URI")
         _schema, _netloc, _path = ConnectorContract.parse_address_elements(uri=uri_pm_path)
-        _file_type = pm_file_type if isinstance(pm_file_type, str) else 'json'
+        _file_type = pm_file_type if isinstance(pm_file_type, str) else 'parquet'
         has_contract = has_contract if isinstance(has_contract, bool) else True
         default_save = default_save if isinstance(default_save, bool) else True
         if isinstance(pm_module, str) and isinstance(pm_handler, str):
@@ -274,7 +272,7 @@ class AbstractComponent(ABC):
         The following environment variables can be set:
             - HADRON_PM_PATH: the property contract path, if not found, uses the system default
             - HADRON_PM_REPO: the property contract should be initially loaded from a read only repo site such as github
-            - HADRON_PM_TYPE: a file type for the property manager. If not found sets as 'json'
+            - HADRON_PM_TYPE: a file type for the property manager. If not found sets as 'parquet'
             - HADRON_PM_MODULE: a default module package, if not set uses component default
             - HADRON_PM_HANDLER: a default handler. if not set uses component default
 
@@ -293,7 +291,7 @@ class AbstractComponent(ABC):
         :param kwargs: to pass to the property ConnectorContract as its kwargs
         :return: the initialised class instance
         """
-        pm_file_type = os.environ.get('HADRON_PM_TYPE', 'json')
+        pm_file_type = os.environ.get('HADRON_PM_TYPE', 'parquet')
         pm_uri = os.environ.get('HADRON_PM_PATH', None)
         if isinstance(uri_pm_repo, str):
             pm_repo = uri_pm_repo
@@ -686,7 +684,7 @@ class AbstractComponent(ABC):
             Transition.REPORT_SCHEMA
             [self.REPORT_NOTES, self.REPORT_SCHEMA]
             [builder.REPORT_NOTES, {'report': builder.REPORT_SCHEMA, 'uri_file': '<file_name>'}]
-            [{'report': Wrangle.REPORT_NOTES, 'file_type': 'json'}]
+            [{'report': Wrangle.REPORT_NOTES, 'file_type': 'parquet'}]
             [{'report': self.REPORT_SCHEMA, 'file_type': 'csv', 'versioned': True, 'stamped': 'days'}]
 
         if a report is presented as dict, the method signature parameters will be overwritten by the report values.
@@ -699,7 +697,7 @@ class AbstractComponent(ABC):
         :param path: (optional) a file path that precedes the prefix and file pattern. uses os.path.join so takes a list
         :param prefix: (optional) a prefix to put at the front of the file pattern to replace the default
         :param suffix: (optional) a suffix to put at the end of the file pattern and extension
-        :param file_type: (optional) a global file extension to the default 'json' format
+        :param file_type: (optional) a global file extension to the default 'parquet' format
         :param versioned: (optional) if all reports should include a version
         :param stamped: (optional) A string of the timestamp options ['days', 'hours', 'minutes', 'seconds', 'ns']
         :param save: (optional) if True, save to file. Default is True
@@ -723,7 +721,7 @@ class AbstractComponent(ABC):
                 self.remove_connector_contract(connector_name=name, save=save)
             prefix = _report.get('prefix', prefix)
             suffix = _report.get('suffix', suffix)
-            file_type = _report.get('file_type', file_type if isinstance(file_type, str) else 'json')
+            file_type = _report.get('file_type', file_type if isinstance(file_type, str) else 'parquet')
             versioned = _report.get('versioned', versioned if isinstance(versioned, str) else True)
             stamped = _report.get('stamped', stamped if isinstance(stamped, str) else False)
             file_pattern = self.pm.file_pattern(name=name, project=project, path=path, prefix=prefix, suffix=suffix,
@@ -1048,7 +1046,7 @@ class AbstractComponent(ABC):
         """ a utility method to help build analytics conditions by aligning method parameters with dictionary format.
 
         :param report: The name of the report
-        :param file_type: (optional) an alternative file extension to the default 'json' format
+        :param file_type: (optional) an alternative file extension to the default 'parquet' format
         :param versioned: (optional) if the component version should be included as part of the pattern
         :param stamped: (optional) A string of the timestamp options ['days', 'hours', 'minutes', 'seconds', 'ns']
         :param prefix: (optional) a prefix to put at the front of the file pattern to replace the default

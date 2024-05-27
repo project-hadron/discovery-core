@@ -1,12 +1,8 @@
 import io
 import requests
 import os
-from contextlib import closing
-import pandas as pd
-import numpy as np
 import pyarrow as pa
 import pyarrow.parquet as pq
-import json
 from pyarrow import csv
 from ds_core.components.core_commons import CoreCommons as Commons
 from ds_core.handlers.abstract_handlers import AbstractSourceHandler, AbstractPersistHandler
@@ -26,7 +22,7 @@ class BaseSourceHandler(AbstractSourceHandler):
 
     def supported_types(self) -> list:
         """ The source types supported with this module"""
-        return ['parquet', 'csv', 'json', 'yaml']
+        return ['parquet', 'csv']
 
     def load_canonical(self, **kwargs) -> pa.Table:
         """ returns the canonical dataset based on the connector contract. """
@@ -59,16 +55,6 @@ class BaseSourceHandler(AbstractSourceHandler):
             if _cc.schema.startswith('http'):
                 address = io.BytesIO(requests.get(address).content)
             return csv.read_csv(address, parse_options=parse_options, read_options=read_options)
-        # json
-        if file_type.lower() in ['json']:
-            data =  self._json_load(path_file=address, **load_params)
-            if isinstance(data, dict):
-                data = [data]
-            data = pa.Table.from_pylist(data)
-            return Commons.table_flatten(data)
-        if file_type.lower() in ['yml', 'yaml']:
-            data = self._yaml_load(path_file=address, **load_params)
-            return pa.Table.from_pydict(data)
         raise LookupError('The source format {} is not currently supported'.format(file_type))
 
     def exists(self) -> bool:
@@ -112,37 +98,6 @@ class BaseSourceHandler(AbstractSourceHandler):
         """ manual reset to say the file has been seen. This is automatically called if the file is loaded"""
         changed = changed if isinstance(changed, bool) else False
         self._changed_flag = changed
-
-    @staticmethod
-    def _json_load(path_file: str, **kwargs) -> [dict, pa.Table]:
-        """ loads a json file """
-        if path_file.startswith('http'):
-            username = kwargs.get('username', None)
-            password = kwargs.get('password', None)
-            auth = (username, password) if username and password else None
-            r = requests.get(path_file, auth=auth)
-            return r.json()
-        with closing(open(path_file, mode='r')) as f:
-            return json.load(f, **kwargs)
-
-    @staticmethod
-    def _yaml_load(path_file, **kwargs) -> dict:
-        """ loads the YAML file"""
-        module_name = 'yaml'
-        if HandlerFactory.check_module(module_name=module_name):
-            module = HandlerFactory.get_module(module_name=module_name)
-        else:
-            raise ModuleNotFoundError(f"The required module {module_name} has not been installed. "
-                                      f"Please pip install the appropriate package in order to complete this action")
-        encoding = kwargs.pop('encoding', 'utf-8')
-        try:
-            with closing(open(path_file, mode='r', encoding=encoding)) as yml_file:
-                rtn_dict = module.safe_load(yml_file)
-        except IOError as e:
-            raise IOError(f"The yaml file {path_file} failed to open with: {e}")
-        if not isinstance(rtn_dict, dict) or not rtn_dict:
-            raise TypeError(f"The yaml file {path_file} could not be loaded as a dict type")
-        return rtn_dict
 
     @staticmethod
     def read_options(**kwargs) -> csv.ReadOptions:
@@ -207,17 +162,6 @@ class BasePersistHandler(BaseSourceHandler, AbstractPersistHandler):
                     canonical = Commons.table_append(canonical, pa.table([sc], names=[n]))
             csv.write_csv(canonical, _address, **write_params)
             return True
-        # json
-        if file_type.lower() in ['json']:
-            cfg_dict = Commons.table_nest(canonical)
-            with closing(open(_address, mode='w')) as f:
-                json.dump(cfg_dict, f, cls=NpEncoder, **kwargs)
-            return True
-        # yaml
-        if file_type.lower() in ['yml', 'yaml']:
-            cfg_dict = canonical.to_pydict()
-            self._yaml_dump(data=cfg_dict, path_file=_address, **write_params)
-            return True
         # not found
         raise LookupError('The file format {} is not currently supported for write'.format(file_type))
 
@@ -231,47 +175,3 @@ class BasePersistHandler(BaseSourceHandler, AbstractPersistHandler):
             os.remove(_cc.address)
             return True
         return False
-
-    @staticmethod
-    def _yaml_dump(data, path_file, **kwargs) -> None:
-        """ dump YAML file
-
-        :param data: the data to persist
-        :param path_file: the name and path of the file
-        :param default_flow_style: (optional) if to include the default YAML flow style
-        """
-        module_name = 'yaml'
-        if HandlerFactory.check_module(module_name=module_name):
-            module = HandlerFactory.get_module(module_name=module_name)
-        else:
-            raise ModuleNotFoundError(f"The required module {module_name} has not been installed. "
-                                      f"Please pip install the appropriate package in order to complete this action")
-        encoding = kwargs.pop('encoding', 'utf-8')
-        default_flow_style = kwargs.pop('default_flow_style', False)
-        # make sure the dump is clean
-        try:
-            with closing(open(path_file, mode='w', encoding=encoding)) as yml_file:
-                module.safe_dump(data=data, stream=yml_file, default_flow_style=default_flow_style, **kwargs)
-        except IOError as e:
-            raise IOError(f"The yaml file {path_file} failed to open with: {e}")
-        # check the file was created
-        return
-
-
-class NpEncoder(json.JSONEncoder):
-
-    def default(self, obj):
-        if isinstance(obj, np.integer):
-            return int(obj)
-        elif isinstance(obj, np.floating):
-            return float(obj)
-        elif isinstance(obj, np.ndarray):
-            return obj.tolist()
-        elif isinstance(obj, np.bool_):
-            return bool(obj)
-        elif isinstance(obj, np.datetime64):
-            return np.datetime_as_string(obj, unit='s')
-        elif isinstance(obj, pd.Timestamp):
-            return np.datetime_as_string(obj.to_datetime64(), unit='s')
-        else:
-            return super(NpEncoder, self).default(obj)
