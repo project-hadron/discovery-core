@@ -103,7 +103,7 @@ implementations
                  template_source_handler: str=None, template_persist_handler: str=None, align_connectors: bool=None,
                  default_save_intent: bool=None, default_intent_level: bool=None, order_next_available: bool=None,
                  default_replace_intent: bool=None, has_contract: bool=None):
-        pm_file_type = pm_file_type if isinstance(pm_file_type, str) else 'json'
+        pm_file_type = pm_file_type if isinstance(pm_file_type, str) else 'parquet'
         pm_module = pm_module if isinstance(pm_module, str) else cls.DEFAULT_MODULE
         pm_handler = pm_handler if isinstance(pm_handler, str) else cls.DEFAULT_PERSIST_HANDLER
         _pm = ExamplePropertyManager(task_name=task_name, username=username)
@@ -246,17 +246,17 @@ Reference
 Python version
 --------------
 
-Python 3.6 or less is not supported. Although Python 3.7 is supported, it is recommended to
-install ``aistac-foundation`` against the latest Python 3.8.x or greater whenever possible.
+Python 3.7 or less is not supported. Although Python 3.8 is supported, it is recommended to
+install ``discover-core`` against the latest Python release.
 
 GitHub Project
 --------------
-aistac-foundation: `<https://github.com/project-hadron/aistac-foundation>`_.
+discover-core: `<https://github.com/project-hadron/discover-core`_.
 
 Change log
 ----------
 
-See `CHANGELOG <https://github.com/project-hadron/aistac-foundation/blob/master/CHANGELOG.rst>`_.
+See `CHANGELOG <https://github.com/project-hadron/discover-core/blob/master/CHANGELOG.rst>`_.
 
 
 Licence
@@ -268,7 +268,7 @@ MIT License: `<https://opensource.org/license/mit/>`_.
 Authors
 -------
 
-`Gigas64`_  (`@gigas64`_) created aistac-foundation.
+`Gigas64`_  (`@gigas64`_) created discover-core.
 
 
 .. _pip: https://pip.pypa.io/en/stable/installing/
