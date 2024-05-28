@@ -1,38 +1,48 @@
 Project Hadron Foundation Package
 #################################
 
-.. class:: no-web no-pdf
+**Project Hadron** is an open-source application framework for in-memory data
+preprocessing and model processing to prediction across a machine learning lifecycle.
+With Apache Arrow as its canonical, **Project Hadron** offers effective data management,
+extensive interoperability, improved memory management and hardware optimization.
 
-.. contents::
+Within this, **Project Hadron** looks to improve the availability of objective relevant
+data, increase the transparency and traceability of data lineage and facilitate knowledge
+transfer, retrieval and reuse.
 
-.. section-numbering::
+What is Project Hadron Core
+===========================
 
-What is Project Hadron
-======================
+Project hadron is an open-source application framework, written in pure Python using PyArrow as its
+canonical and depends on Python and pyArrow packages only. It was constructed using object-oriented
+design (OOD) and object-oriented programming (OOP) techniques to provide an extendable framework for
+quick build component solutions.
 
-Project Hadron provides a clear separation of concerns between components and their actions and data
-and its content, whilst maintaining the original intentions of the data scientist, that can be passed
-to a production team. It offers trust between the data scientists teams and product teams. It brings
-with it transparency and traceability, dealing with bias, fairness, and knowledge. The resulting
-outcome provides the product engineers with adaptability, robustness, and reuse; fitting seamlessly
-into a microservices solution that can be language agnostic.
+Component services are built for business capabilities with each capability performing a single function.
+Because they are independently run, each capability can be updated, deployed, and scaled to meet demand
+for specific functions of an application.
 
-Project Hadron is designed using Microservices. Microservices - also known as the microservice
-architecture - is an architectural pattern that structures an application as a collection of
-component services that are:
+What are capabilities?
+----------------------
 
-* Highly maintainable and testable
-* Loosely coupled
-* Independently deployable
-* Highly reusable
-* Resilient
-* Technically independent
+In project Hadron capabilities are components that adhere to the fundamental concepts
+of `capability patterns` and `separation of concern` (SoC). They are design principle
+that advocates breaking a software system into distinct, independent modules or
+components with, low coupling and high cohesion each addressing a specific concern or
+aspect of the system's functionality.
 
-Component services are built for business capabilities and each service performs a single function.
-Because they are independently run, each service can be updated, deployed, and scaled to meet demand
-for specific functions of an application. Project Hadron microservices enable the rapid, frequent
-and reliable delivery of large, complex applications. It also enables an organization to evolve its
-technology stack and experiment with innovative ideas.
+Capabilities are reusable and encapsulated tasks which can be applied at any stage of the
+life cycle and prescribes a work breakdown structure of functionalities and features a
+software solution possesses.
+
+Together, capability patterns help in understanding what a reusable component task should
+achieve, while separation of concerns ensures that the component task is designed in a
+modular and maintainable way, with each part addressing a specific aspect of its
+functionality. Both principles contribute to building modular, robust and scalable
+software solutions.
+
+The build overview
+------------------
 
 At the heart of Project Hadron is a multi-tenant, NoSQL, singleton, in memory data store that has
 minimal code and functionality and has been custom built specifically for Hadron tasks in  mind.
