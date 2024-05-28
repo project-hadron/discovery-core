@@ -249,16 +249,6 @@ Python version
 Python 3.7 or less is not supported. Although Python 3.8 is supported, it is recommended to
 install ``discover-core`` against the latest Python release.
 
-GitHub Project
---------------
-discover-core: `<https://github.com/project-hadron/discover-core`_.
-
-Change log
-----------
-
-See `CHANGELOG <https://github.com/project-hadron/discover-core/blob/master/CHANGELOG.rst>`_.
-
-
 Licence
 -------
 
