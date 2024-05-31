@@ -1,26 +1,13 @@
 Project Hadron Foundation Package
 #################################
 
-**Project Hadron** is an open-source application framework for in-memory data
-preprocessing and model processing to prediction across a machine learning lifecycle.
-With Apache Arrow as its canonical, **Project Hadron** offers effective data management,
-extensive interoperability, improved memory management and hardware optimization.
-
-Within this, **Project Hadron** looks to improve the availability of objective relevant
-data, increase the transparency and traceability of data lineage and facilitate knowledge
-transfer, retrieval and reuse.
-
-What is Project Hadron Core
-===========================
-
-Project hadron is an open-source application framework, written in pure Python using PyArrow as its
-canonical and depends on Python and pyArrow packages only. It was constructed using object-oriented
-design (OOD) and object-oriented programming (OOP) techniques to provide an extendable framework for
-quick build component solutions.
-
-Component services are built for business capabilities with each capability performing a single function.
-Because they are independently run, each capability can be updated, deployed, and scaled to meet demand
-for specific functions of an application.
+**Project Hadron** Foundation package is an open-source application framework, written in
+pure Python using PyArrow as its canonical and depends on Python and pyArrow packages
+only. It provides a set of abstractions that allow a quick to market solution of
+component services (microservices) relevant to a use case. Component services are built
+for tasks called capabilities with each capability performing a single function. Because
+they are independently run, each capability can be updated, deployed, and scaled to meet
+demand for specific functions of an application.
 
 What are capabilities?
 ----------------------
@@ -53,9 +40,6 @@ reference values unless by specificity. Each of the classes, the data store, the
 property manager, and the key value pairs that make up the component are all independent,
 giving complete flexibility and minimum code footprint to the build process of new components.
 
-This is what gives us the Domain Contract for each tenant which sits at the heart of what makes
-the contracts reusable, translatable, transferable and brings the data scientist closer to the
-production engineer along with building a production ready component solution.
 
 Installation
 ============
