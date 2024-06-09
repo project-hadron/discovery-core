@@ -741,7 +741,7 @@ class AbstractPropertyManager(ABC):
         if str(_path).startswith('${'):
             _path = ConnectorContract.parse_environ(_path)
         _schema, _, _ = ConnectorContract.parse_address_elements(uri=_path)
-        for _package in ['ds_core']:
+        for _package in ['ds_core', AbstractPropertyManager.get_pkg_root()]:
             _module_name = f'{_package}.handlers.{_schema.lower()}_handlers'
             _handler = f'{_schema.title()}PersistHandler'
             if HandlerFactory.check_handler(_module_name, _handler):
@@ -1271,3 +1271,8 @@ class AbstractPropertyManager(ABC):
     def list_formatter(value) -> list:
         """ Useful utility method to convert any type of str, list, tuple or pd.Series into a list"""
         return CoreCommons.list_formatter(value=value)
+
+    @staticmethod
+    @abstractmethod
+    def get_pkg_root():
+        pass
