@@ -1,5 +1,5 @@
-Project Hadron
-==============
+Project Hadron Foundation
+=========================
 
 **Project Hadron** Foundation package is an open-source application framework, written in
 pure Python using PyArrow as its canonical and depends on Python and PyArrow packages
