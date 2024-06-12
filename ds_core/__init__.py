@@ -1,3 +1,3 @@
 # release version number picked up in the setup.py
 
-__version__ = "2.11.5"
+__version__ = "2.11.6"
