@@ -51,13 +51,13 @@ The best way to install this package is directly from the Python Package Index r
 
 .. code-block:: bash
 
-    $ pip install aistac-foundation
+    $ pip install discovery-core
 
 if you want to upgrade your current version then using pip
 
 .. code-block:: bash
 
-    $ pip install --upgrade aistac-foundation
+    $ pip install --upgrade discovery-core
 
 Package Overview
 ================
@@ -231,7 +231,7 @@ Python version
 --------------
 
 Python 3.7 or less is not supported. Although Python 3.8 is supported, it is recommended to
-install ``discover-core`` against the latest Python release.
+install ``discovery-core`` against the latest Python release.
 
 Licence
 -------
