@@ -13,9 +13,9 @@ The foundation package provides the building blocks for a quick to market compon
 solution providing clear boundaries between concepts. It provides all the core elements
 needed to bring a product to market.
 
-.. image:: /source/_images/custom/abs_intent.png
+.. image:: /source/_images/custom/abstract_classes.png
    :align: center
-   :width: 600
+   :width: 700
 
 For a more in-depth view of **Project Hadron** read the section on :ref:`Building a Capability`
 once you have :ref:`installed<Installation>` the package.
