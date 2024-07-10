@@ -1,3 +1,20 @@
+"""
+Copyright (C) 2024  Gigas64
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU Affero General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU Affero General Public License for more details.
+
+You will find a copy of this licenseIn the root directory of the project
+or you can visit <https://www.gnu.org/licenses/> For further information.
+"""
+
 import os
 import re
 from abc import ABC, abstractmethod
@@ -10,8 +27,6 @@ from ds_core.handlers.event_handlers import EventPersistHandler
 from ds_core.properties.property_manager import PropertyManager
 from ds_core.handlers.abstract_handlers import AbstractSourceHandler, AbstractPersistHandler
 from ds_core.handlers.abstract_handlers import HandlerFactory, ConnectorContract
-
-__author__ = 'Darryl Oatridge'
 
 
 class AbstractProperty(object):
