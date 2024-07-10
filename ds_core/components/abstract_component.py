@@ -25,8 +25,6 @@ from ds_core.properties.abstract_properties import AbstractPropertyManager
 from ds_core.handlers.abstract_handlers import ConnectorContract, HandlerFactory
 from ds_core.handlers.abstract_handlers import AbstractPersistHandler, AbstractSourceHandler
 
-__author__ = 'Darryl Oatridge'
-
 
 class AbstractComponent(ABC):
     """ Abstract AI Single Task Application Component (AI-STAC) component class provides all the basic building blocks
